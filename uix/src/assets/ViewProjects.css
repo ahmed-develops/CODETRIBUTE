@@ -1,0 +1,49 @@
+
+.path-cell {
+  max-width: 500px;
+  overflow: hidden;
+  overflow-wrap: break-word;
+}
+
+.commit-container {
+  margin: 20px;
+}
+  
+table {
+  width: 100%;
+  border-collapse: collapse;
+  background-color: #f7f7f7;
+}
+  
+table th, table td {
+  border: 1px solid #ccc;
+  padding: 8px;
+  text-align: left;
+}
+  
+  thead {
+    background-color: #333;
+    color: #fff;
+  }
+  
+  tbody tr:nth-child(even) {
+    background-color: #f2f2f2;
+  }
+  
+  .button-container {
+    margin: 20px;
+  }
+  
+  button {
+    background-color: #007bff;
+    color: #fff;
+    border: none;
+    padding: 10px 20px;
+    margin-right: 10px;
+    cursor: pointer;
+  }
+  
+  button:hover {
+    background-color: #0056b3;
+  }
+  
