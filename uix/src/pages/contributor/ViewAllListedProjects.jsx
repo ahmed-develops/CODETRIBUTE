@@ -147,6 +147,8 @@ const ViewAllListedProjects = ({ loginCredentials }) => {
               <th>Project Name</th>
               <th>Project Description</th>
               <th>Code Path</th>
+              <th>Tokens offered</th>
+              <th>Tokens required</th>
               <th></th>
             </tr>
           </thead>
@@ -157,6 +159,8 @@ const ViewAllListedProjects = ({ loginCredentials }) => {
                 <td>{val.project_name}</td>
                 <td className="path-cell">{val.project_description}</td>
                 <td className="path-cell">{val.code_path}</td>
+                <td>{val.tokens_offered}</td>
+                <td>{val.tokens_required}</td>
                 <Button
                   onClick={() => {
                     handleShow();

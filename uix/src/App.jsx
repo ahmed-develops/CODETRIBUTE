@@ -14,6 +14,7 @@ import ManageCommits from "./pages/publisher/ManageCommits";
 import ViewCommits from "./pages/publisher/ViewCommits";
 import ViewMyCommits from "./pages/contributor/ViewMyCommits";
 import ViewAllListedProjects from "./pages/contributor/ViewAllListedProjects";
+import Wallet from "./pages/Wallet";
 
 import "./App.css";
 import Button from "react-bootstrap/esm/Button";
@@ -38,6 +39,7 @@ function App() {
 
   const logout = () => {
     setLoginCredentials(null);
+    setLoginState(false);
     localStorage.removeItem("loginCredentials");
     window.location = "/";
   };
@@ -47,6 +49,7 @@ function App() {
     if (storedLoginCredentials) {
       const parsedCredentials = JSON.parse(storedLoginCredentials);
       setLoginCredentials(parsedCredentials);
+      setLoginState(true);
     }
   }, []);
 
@@ -55,19 +58,20 @@ function App() {
   const router = createBrowserRouter([
     {
       path: "/",
-      element: <LandingPage setLogin={setLogin} />,
+      element: <LandingPage setLogin={setLogin} />
     },
-
+    {
+      path: "/wallet",
+      element: <Wallet loginCredentials={loginCredentials}/>
+    },
     {
       path: "/admin-portal",
       element: <AdminPortal />,
     },
-
     {
       path: "/contributor-portal",
       element: <ContributorPortal loginCredentials={loginCredentials} />,
     },
-
     {
       path: "/publisher-portal",
       element: <PublisherPortal loginCredentials={loginCredentials} />,

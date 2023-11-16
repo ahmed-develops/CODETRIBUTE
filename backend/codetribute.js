@@ -290,7 +290,7 @@ codetribute.get("/get/commit/count/:project_id", async (req, res) => {
       `SELECT COUNT(*) as "CommitCount"
       FROM commitbase C
       INNER JOIN projectbase P ON C.project_id = P.project_id
-      WHERE C.project_id = ? AND C.successful_commit = "Accepted"`,
+      WHERE C.project_id = ? AND C.commit_status = "Accepted"`,
       [project_id],
 
       (err, result, fields) => {
@@ -314,7 +314,7 @@ codetribute.post("/manage/commit/reject/:commit_id", async (req, res) => {
     await db.query(
       `
       UPDATE commitbase
-      SET successful_commit = 'Rejected'
+      SET commit_status = 'Rejected'
       WHERE commit_id = ?
       `,
       [commit_id],
@@ -340,7 +340,7 @@ codetribute.post("/manage/commit/accept/:commit_id", async (req, res) => {
     await db.query(
       `
       UPDATE commitbase
-      SET successful_commit = "Accepted"
+      SET commit_status = "Accepted"
       WHERE commit_id = ?;
     `,
       [commit_id],
@@ -367,7 +367,7 @@ codetribute.get("/get/commits/projects/:pid", async (req, res) => {
       `SELECT C.* 
       FROM commitbase C
       INNER JOIN projectbase P ON C.project_id = P.project_id
-      WHERE P.publisher_id = ? AND C.successful_commit = 'Accepted'`,
+      WHERE P.publisher_id = ? AND C.commit_status = 'Accepted'`,
       [pid],
       (err, result, field) => {
         if (err) {
@@ -379,6 +379,31 @@ codetribute.get("/get/commits/projects/:pid", async (req, res) => {
     );
   } catch (err) {
     console.error(err);
+  }
+});
+
+codetribute.post("/recordTx/:_to/:_amount", async (req, res) => {
+  const {_to, _amount} = req.params;
+
+  try {
+    await db.query(
+      `
+      INSERT INTO transactions (receiver_id, amount)
+      VALUES (?,?)
+      `,
+      [_to, _amount],
+      (err, result, fields) => {
+        if (err) {
+          res.status(400).json({status: 400});
+        }
+        else {
+          res.status(200).json({status: 200});
+        }
+      }
+    )
+  }
+  catch (error) {
+    console.error(error);
   }
 });
 
@@ -426,15 +451,46 @@ codetribute.post("/transfer/tokens/:to", async (req, res) => {
 
           res.status(200).json({
             status: 200,
-            _amount: 1000,
+            _amount: 100,
             _to: result[0].owner_id,
-            _wallet: result[0].wallet_id,
+            _wallet: result[0].wallet_id
           });
         }
       }
     );
   } catch (error) {
     console.error(error);
+  }
+});
+
+codetribute.get("/get/history/:id", async (req, res) => {
+  const {id} = req.params;
+
+  try {
+    await db.query(
+      `
+                SELECT *
+                FROM transactions T
+                WHERE T.receiver_wallet_id = ? OR T.sender_wallet_id = ?
+                
+            `,
+      [id, id],
+
+      (err, result, field) => {
+        if (err) res.status(400).json({ status: 400 });
+        else {
+          if (result.length > 0) {
+            res.status(200).json(result);
+          } else {
+            res.status(400).json({ status: 400 });
+          }
+        }
+        console.table(result);
+      }
+    );
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ status: 500, msg: "Internal Server Error" });
   }
 });
 
@@ -448,7 +504,7 @@ codetribute.get("/get/commit/project/:pid", async (req, res) => {
                 SELECT C.*
                 FROM commitbase C
                 INNER JOIN projectbase P ON C.project_id = P.project_id
-                WHERE P.project_id = ? AND C.successful_commit = "Pending"
+                WHERE P.project_id = ? AND C.commit_status = "Pending"
             `,
       [pid],
 
@@ -502,14 +558,14 @@ codetribute.get("/get/commit/contributor/:cid", async (req, res) => {
   }
 });
 
-// Commit Retrieval API (by successful_commit)
+// Commit Retrieval API (by commit_status)
 codetribute.get("/get/commit/success", async (req, res) => {
   try {
     await db.query(
       `
                 SELECT *
                 FROM commitbase
-                WHERE successful_commit = "Accepted"
+                WHERE commit_status = "Accepted"
             `,
       [],
 
@@ -530,14 +586,14 @@ codetribute.get("/get/commit/success", async (req, res) => {
   }
 });
 
-// Commit Retrieval API (by unsuccessful_commit)
+// Commit Retrieval API (by uncommit_status)
 codetribute.get("/get/commit/failure", async (req, res) => {
   try {
     await db.query(
       `
                 SELECT *
                 FROM commitbase
-                WHERE successful_commit = "Rejected"
+                WHERE commit_status = "Rejected"
             `,
       [],
 

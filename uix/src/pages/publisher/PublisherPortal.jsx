@@ -14,10 +14,11 @@ const PublisherPortal = ({ loginCredentials }) => {
   const [show, setShow] = useState(false);
   const [selectedRole, setSelectedRole] = useState("");
   const [formData, setFormData] = useState({
-    project_id: "",
+    projectId: "",
     projectName: "",
     projectDescription: "",
     projectLink: "",
+    tokensRequired: ""
   });
   const handleClose = () => setShow(false);
   const handleShow = () => setShow(true);
@@ -39,7 +40,7 @@ const PublisherPortal = ({ loginCredentials }) => {
 
     console.log(formData);
     if (
-      !formData.project_id ||
+      !formData.projectId ||
       !formData.projectName ||
       !formData.projectLink
     ) {
@@ -54,11 +55,12 @@ const PublisherPortal = ({ loginCredentials }) => {
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
-          project_id: formData.project_id,
+          projectId: formData.projectId,
           projectName: formData.projectName,
           projectDescription: formData.projectDescription,
           projectLink: formData.projectLink,
-          userId: loginCredentials.user_id,
+          tokenRequired: formData.tokensRequired,
+          userId: loginCredentials.user_id
         }),
       });
 
@@ -89,10 +91,9 @@ const PublisherPortal = ({ loginCredentials }) => {
             <Form.Group className="mb-3">
               <Form.Label>ID</Form.Label>
               <Form.Control
-                name="project_id"
+                name="projectId"
                 type="text"
-                autoFocus
-                value={formData.project_id}
+                value={formData.projectId}
                 onChange={handleInputChange}
               />
             </Form.Group>
@@ -101,7 +102,6 @@ const PublisherPortal = ({ loginCredentials }) => {
               <Form.Control
                 name="projectName"
                 type="text"
-                autoFocus
                 value={formData.projectName}
                 onChange={handleInputChange}
               />
@@ -111,7 +111,6 @@ const PublisherPortal = ({ loginCredentials }) => {
               <Form.Control
                 name="projectDescription"
                 type="text"
-                autoFocus
                 value={formData.projectDescription}
                 onChange={handleInputChange}
               />
@@ -121,8 +120,16 @@ const PublisherPortal = ({ loginCredentials }) => {
               <Form.Control
                 name="projectLink"
                 type="text"
-                autoFocus
                 value={formData.projectLink}
+                onChange={handleInputChange}
+              />
+            </Form.Group>
+            <Form.Group className="mb-3">
+              <Form.Label>Tokens Required</Form.Label>
+              <Form.Control
+                name="tokensRequired"
+                type="text"
+                value={formData.tokensRequired}
                 onChange={handleInputChange}
               />
             </Form.Group>
@@ -155,6 +162,10 @@ const PublisherPortal = ({ loginCredentials }) => {
         <NavLink to="/publisher/view-commits" className=" it-1">
           <img src={CommitImg} className="item-icon" />
           <p className="item-header">VIEW COMMITS</p>
+        </NavLink>
+        <NavLink to="/wallet" className=" it-1">
+          <img src={CommitImg} className="item-icon" />
+          <p className="item-header">WALLET</p>
         </NavLink>
       </div>
     </>

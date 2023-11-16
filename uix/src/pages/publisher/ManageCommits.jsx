@@ -197,6 +197,23 @@ const ManageCommits = ({ loginCredentials }) => {
 
                               if (APIResponse.status === 200) {
                                 alert(`Sent ${APIResponse._amount} to ${APIResponse._to}'s wallet [${APIResponse._wallet}]`);
+                                
+                                const recordTx = await fetch(`http://localhost:3300/recordTx/${APIResponse._to}/${APIResponse._amount}`,
+                                {
+                                  method: 'POST',
+                                  headers: {
+                                    'Content-Type' : 'application/json'
+                                  }
+                                });
+
+                                const data = await recordTx.json();
+
+                                if (data.status === 200) {
+                                  alert('Tx recorded');
+                                }
+                                else {
+                                  alert('Tx cannot be recorded');
+                                }
                               }
                               else {
                                 alert("There was some issue granting tokens to the contributor.");

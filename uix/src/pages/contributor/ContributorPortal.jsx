@@ -15,10 +15,10 @@ const ContributorPortal = ({ loginCredentials }) => {
           <img src={CommitImg} className="item-icon" />
           <p className="item-header">VIEW MY COMMITS</p>
         </NavLink>
-        {/* <NavLink to="/publisher/view-commits" className=" it-1">
+        <NavLink to="/wallet" className=" it-1">
           <img src={CommitImg} className="item-icon" />
-          <p className="item-header">VIEW COMMITS</p>
-        </NavLink> */}
+          <p className="item-header">WALLET</p>
+        </NavLink>
       </div>
     </>
   );

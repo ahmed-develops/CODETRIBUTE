@@ -32,7 +32,7 @@ CREATE TABLE `commitbase` (
   `contributor_id` varchar(3) NOT NULL,
   `commit_path` varchar(500) NOT NULL,
   `project_id` varchar(10) NOT NULL,
-  `successful_commit` varchar(10) NOT NULL DEFAULT 'Pending',
+  `commit_status` varchar(10) NOT NULL DEFAULT 'Pending',
   `timestamp` timestamp NOT NULL DEFAULT current_timestamp()
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
@@ -40,7 +40,7 @@ CREATE TABLE `commitbase` (
 -- Dumping data for table `commitbase`
 --
 
-INSERT INTO `commitbase` (`commit_id`, `contributor_id`, `commit_path`, `project_id`, `successful_commit`, `timestamp`) VALUES
+INSERT INTO `commitbase` (`commit_id`, `contributor_id`, `commit_path`, `project_id`, `commit_status`, `timestamp`) VALUES
 ('Commit1', 'C01', 'https://fefgergre.com', 'Project5', 'Accepted', '2023-10-27 08:44:13'),
 ('Commit3', 'C08', 'https://drive.google.com/file/d/1GjegepX80KVdvLCLkTfMxRBfiG6xP4On/view', 'Project5', 'Accepted', '2023-10-27 04:49:39'),
 ('Commit45', 'C01', 'http://localhost:5173/contributor/view-all-listed-projects', 'Project3', 'Accepted', '2023-11-03 14:50:02'),

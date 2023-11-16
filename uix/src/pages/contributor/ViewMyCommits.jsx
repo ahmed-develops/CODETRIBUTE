@@ -52,7 +52,7 @@ const ViewMyCommits = ({ loginCredentials }) => {
                 <td>{val.project_id}</td>
                 <td className="path-cell">{val.code_path}</td>
                 <td className="path-cell">{val.commit_path}</td>
-                <td>{val.successful_commit}</td>
+                <td>{val.commit_status}</td>
               </tr>
             ))}
           </tbody>
