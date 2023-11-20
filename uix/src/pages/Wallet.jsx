@@ -1,234 +1,195 @@
-// import React, { useEffect, useState } from "react";
-// import Web3 from 'web3';
-// import PropTypes from 'prop-types';
-
-// const Wallet = ({ loginCredentials }) => {
-//     const [walletInfo, setWalletInfo] = useState(null);
-//     const [txHistory, setTxHistory] = useState(null);
-
-//     useEffect(() => {
-//         loadWallet();
-//     }, [loginCredentials.user_id]);
-    
-//     const loadWallet = async () => {
-//         try {
-//             if (window.ethereum) {
-//                 const web3 = new Web3(window.ethereum);
-//                 const accounts = await window.ethereum.request({
-//                     method: 'eth_requestAccounts'
-//                 });
-//                 const balance_wei = await web3.eth.getBalance(accounts[0]);
-//                 const balance = web3.utils.fromWei(balance_wei, 'ether');
-
-//                 setWalletInfo({
-//                     web3: web3,
-//                     balance: balance,
-//                     account: accounts[0]
-//                 });
-
-//                 fetchTransactionHistory();
-//             } else {
-//                 throw new Error('Web3 not available');
-//             }
-//         } catch (error) {
-//             console.error(error);
-//         }
-//     };
-
-//     const fetchTransactionHistory = async () => {
-//         try {
-//             const getHistory = await fetch(`http://localhost:3300/get/history/${loginCredentials.user_id}`, {
-//                 method: 'GET',
-//                 headers: {
-//                     'Content-Type': 'application/json'
-//                 }
-//             });
-
-//             const history = await getHistory.json();
-
-//             if (Array.isArray(history)) {
-//                 setTxHistory(history);
-//             } else {
-//                 setTxHistory([history]);
-//             }
-//         } catch (error) {
-//             console.error(error);
-//         }
-//     };
-
-//     const renderTransactionTable = () => {
-//         return (
-//             <div className="projects-container">
-//                 <table>
-//                     <thead>
-//                         <tr>
-//                             <th>Transaction ID</th>
-//                             <th>Receiver Wallet ID</th>
-//                             <th>Sender Wallet ID</th>
-//                             <th>Tokens Transferred</th>
-//                             <th>Timestamp</th>
-//                         </tr>
-//                     </thead>
-//                     <tbody>
-//                         {txHistory ? (
-//                             txHistory.map((val, i) => (
-//                                 <tr key={i}>
-//                                     <td>{val.transaction_id}</td>
-//                                     <td>{val.receiver_wallet_id}</td>
-//                                     <td className="path-cell">{val.sender_wallet_id}</td>
-//                                     <td className="path-cell">{val.tokens_transferred}</td>
-//                                     <td>{val.timestamp}</td>
-//                                 </tr>
-//                             ))
-//                         ) : (
-//                             <tr>
-//                                 <td colSpan="6">No transaction history available</td>
-//                             </tr>
-//                         )}
-//                     </tbody>
-//                 </table>
-//             </div>
-//         );
-//     };
-
-//     return (
-//         <>
-//             <h1>Wallet Number: {walletInfo?.account}</h1>
-//             <h1>Wallet Balance: {walletInfo?.balance}</h1>
-//             <hr />
-//             <fieldset>TRANSACTIONS</fieldset>
-//             <hr />
-//             {renderTransactionTable()}
-//         </>
-//     );
-// };
-
-// Wallet.propTypes = {
-//     setWalletInfo: PropTypes.func.isRequired,
-// };
-
-// export default Wallet;
-
 import React, { useEffect, useState } from "react";
-import Web3 from 'web3';
-import PropTypes from 'prop-types';
-
-import TokenABI from './TokenABI.json';
+import Web3 from "web3";
+import PropTypes from "prop-types";
+import TokenABI from "./TokenABI.json";
 
 const Wallet = ({ loginCredentials }) => {
-    const [walletInfo, setWalletInfo] = useState(null);
-    const [txHistory, setTxHistory] = useState(null);
-    const [tokenBalance, setTokenBalance] = useState(null);
+  const [walletAddress, setWalletAddress] = useState(null);
+  const [incomingTxHistory, setIncomingTxHistory] = useState(null);
+  const [outgoingTxHistory, setOutgoingTxHistory] = useState(null);
+  const [tokenBalance, setTokenBalance] = useState(null);
 
-    useEffect(() => {
-        loadWallet();
-    }, [loginCredentials.user_id]);
+  useEffect(() => {
+    loadWallet();
+  }, []);
 
-    const loadWallet = async () => {
-        try {
-            if (window.ethereum) {
-                const web3 = new Web3(window.ethereum);
-                const accounts = await window.ethereum.request({
-                    method: 'eth_requestAccounts'
-                });
-                const balance_wei = await web3.eth.getBalance(accounts[0]);
-                const balance = web3.utils.fromWei(balance_wei, 'ether');
-
-                setWalletInfo({
-                    web3: web3,
-                    balance: balance,
-                    account: accounts[0]
-                });
-
-                fetchTransactionHistory();
-
-                // Fetch token balance
-                const tokenAddress = '0xe2ca36365E40e81A8185bB8986d662501dF5F6f2';  // Replace with your token's address
-                const tokenAbi = TokenABI;  // Replace with your token's ABI
-                const tokenContract = new web3.eth.Contract(tokenAbi, tokenAddress);
-
-                const userAddress = accounts[0];
-                const tokenBalance = await tokenContract.methods.balanceOf(userAddress).call();
-                setTokenBalance(tokenBalance);
-            } else {
-                throw new Error('Web3 not available');
-            }
-        } catch (error) {
-            console.error(error);
+  const loadWallet = async () => {
+    try {
+      const getWalletFromDatabase = await fetch(
+        `http://localhost:3300/get/wallet/${loginCredentials.user_id}`,
+        {
+          method: "GET",
+          headers: {
+            "Content-Type": "application/json",
+          },
         }
-    };
+      );
 
-    const fetchTransactionHistory = async () => {
-        try {
-            const getHistory = await fetch(`http://localhost:3300/get/history/${loginCredentials.user_id}`, {
-                method: 'GET',
-                headers: {
-                    'Content-Type': 'application/json'
-                }
-            });
+      const wallet = await getWalletFromDatabase.json();
 
-            const history = await getHistory.json();
+      console.log(wallet);
+      if (wallet.status === 200) {
+        fetchIncomingTransactionHistory();
+        fetchOutgoingTransactionHistory();
 
-            if (Array.isArray(history)) {
-                setTxHistory(history);
-            } else {
-                setTxHistory([history]);
-            }
-        } catch (error) {
-            console.error(error);
+        setWalletAddress(wallet.accountAddress);
+        const web3 = new Web3('https://eth-sepolia.g.alchemy.com/v2/f_R62a50s5Tn4qsHaz0n0AyoIUkwzXAG');
+        const tokenAddress = "0xe2ca36365E40e81A8185bB8986d662501dF5F6f2";
+        const tokenAbi = TokenABI; 
+        const tokenContract = new web3.eth.Contract(tokenAbi, tokenAddress);
+
+        const userAddress = wallet.accountAddress;
+        const tokenBalance = await tokenContract.methods
+          .balanceOf(userAddress)
+          .call();
+        setTokenBalance(tokenBalance);
+      }
+    } catch (error) {
+      console.error(error);
+    }
+  };
+
+  const fetchIncomingTransactionHistory = async () => {
+    try {
+      const getIncomingHistory = await fetch(
+        `http://localhost:3300/get/tx/incoming/${loginCredentials.user_id}`,
+        {
+          method: "GET",
+          headers: {
+            "Content-Type": "application/json",
+          },
         }
-    };
+      );
 
-    const renderTransactionTable = () => {
-        return (
-            <div className="projects-container">
-                <table>
-                    <thead>
-                        <tr>
-                            <th>Transaction ID</th>
-                            <th>Receiver Wallet ID</th>
-                            <th>Sender Wallet ID</th>
-                            <th>Tokens Transferred</th>
-                            <th>Timestamp</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {txHistory ? (
-                            txHistory.map((val, i) => (
-                                <tr key={i}>
-                                    <td>{val.transaction_id}</td>
-                                    <td>{val.receiver_wallet_id}</td>
-                                    <td className="path-cell">{val.sender_wallet_id}</td>
-                                    <td className="path-cell">{val.tokens_transferred}</td>
-                                    <td>{val.timestamp}</td>
-                                </tr>
-                            ))
-                        ) : (
-                            <tr>
-                                <td colSpan="6">No transaction history available</td>
-                            </tr>
-                        )}
-                    </tbody>
-                </table>
-            </div>
-        );
-    };
+      const incomingHistory = await getIncomingHistory.json();
 
+      if (Array.isArray(incomingHistory)) {
+        setIncomingTxHistory(incomingHistory);
+      } else {
+        setIncomingTxHistory([incomingHistory]);
+      }
+    } catch (error) {
+      console.error(error);
+    }
+  };
+
+  const fetchOutgoingTransactionHistory = async () => {
+    try {
+      const getOutgoingHistory = await fetch(
+        `http://localhost:3300/get/tx/outgoing/${loginCredentials.user_id}`,
+        {
+          method: "GET",
+          headers: {
+            "Content-Type": "application/json",
+          },
+        }
+      );
+
+      const outgoingHistory = await getOutgoingHistory.json();
+
+      if (Array.isArray(outgoingHistory)) {
+        setOutgoingTxHistory(outgoingHistory);
+      } else {
+        setOutgoingTxHistory([outgoingHistory]);
+      }
+    } catch (error) {
+      console.error(error);
+    }
+  };
+
+  const renderIncomingTransactionTable = () => {
     return (
-        <>
-            <h1>Wallet Number: {walletInfo?.account}</h1>
-            <h1>Wallet Balance: {walletInfo?.balance}</h1>
-            <h1>Token Balance: {tokenBalance}</h1>
-            <hr />
-            <fieldset>TRANSACTIONS</fieldset>
-            <hr />
-            {renderTransactionTable()}
-        </>
+      <div className="projects-container">
+        <table>
+          <thead>
+            <tr>
+              <th>Transaction ID</th>
+              <th>Receiver Wallet ID</th>
+              <th>Sender Wallet ID</th>
+              <th>Tokens Transferred</th>
+              <th>Timestamp</th>
+            </tr>
+          </thead>
+          <tbody>
+            {incomingTxHistory ? (
+              incomingTxHistory.map((val, i) => (
+                <tr key={i}>
+                  <td>{val.transaction_id}</td>
+                  <td>{val.receiver_user_id}</td>
+                  <td className="path-cell">{val.sender_user_id}</td>
+                  <td className="path-cell">{val.amount}</td>
+                  <td>{val.timestamp}</td>
+                </tr>
+              ))
+            ) : (
+              <tr>
+                <td colSpan="6">No transaction history available</td>
+              </tr>
+            )}
+          </tbody>
+        </table>
+      </div>
     );
+  };
+
+  const renderOutgoingTransactionTable = () => {
+    return (
+      <div className="projects-container">
+        <table>
+          <thead>
+            <tr>
+              <th>Transaction ID</th>
+              <th>Receiver Wallet ID</th>
+              <th>Sender Wallet ID</th>
+              <th>Tokens Transferred</th>
+              <th>Timestamp</th>
+            </tr>
+          </thead>
+          <tbody>
+            {outgoingTxHistory ? (
+              outgoingTxHistory.map((val, i) => (
+                <tr key={i}>
+                  <td>{val.transaction_id}</td>
+                  <td>{val.receiver_user_id}</td>
+                  <td className="path-cell">{val.sender_user_id}</td>
+                  <td className="path-cell">{val.amount}</td>
+                  <td>{val.timestamp}</td>
+                </tr>
+              ))
+            ) : (
+              <tr>
+                <td colSpan="6">No transaction history available</td>
+              </tr>
+            )}
+          </tbody>
+        </table>
+      </div>
+    );
+  };
+
+  return (
+    <>
+    {walletAddress ?
+    <>
+      <h1>Wallet Number: {walletAddress}</h1>
+      <h1>Token Balance: {tokenBalance}</h1>
+      <hr />
+      <fieldset>INCOMING TRANSACTIONS</fieldset>
+      <hr />
+      {renderIncomingTransactionTable()}
+      <br/>
+      <hr />
+      <fieldset>OUTGOING TRANSACTIONS</fieldset>
+      <hr />
+      {renderOutgoingTransactionTable()}
+    </>
+    : <h1>User does not have a wallet</h1> }
+    </>
+  );
 };
 
 Wallet.propTypes = {
-    setWalletInfo: PropTypes.func.isRequired,
+  setWalletAdress: PropTypes.func.isRequired,
 };
 
 export default Wallet;

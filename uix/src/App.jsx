@@ -1,8 +1,4 @@
-import {
-  RouterProvider,
-  createBrowserRouter,
-  useLocation,
-} from "react-router-dom";
+import {RouterProvider, createBrowserRouter} from "react-router-dom";
 import { useState, useEffect } from "react";
 
 import LandingPage from "./pages/LandingPage";
@@ -32,8 +28,8 @@ function App() {
       phone_number: userdata.phone_number,
       privilege: userdata.privilege,
     };
-    setLoginState(true);
     setLoginCredentials(credentials);
+    setLoginState(true);
     localStorage.setItem("loginCredentials", JSON.stringify(credentials));
   };
 
@@ -49,9 +45,8 @@ function App() {
     if (storedLoginCredentials) {
       const parsedCredentials = JSON.parse(storedLoginCredentials);
       setLoginCredentials(parsedCredentials);
-      setLoginState(true);
     }
-  }, []);
+  }, [loginState]);
 
   console.log(loginCredentials);
 

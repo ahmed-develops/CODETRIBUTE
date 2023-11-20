@@ -2,6 +2,9 @@
 const express = require("express");
 const codetribute = express();
 
+//
+const crypto = require("crypto");
+
 // JSON PAYLOAD PARSER
 codetribute.use(express.json());
 
@@ -21,11 +24,11 @@ const Web3 = require("web3");
 const web3 = new Web3(
   `https://eth-sepolia.g.alchemy.com/v2/f_R62a50s5Tn4qsHaz0n0AyoIUkwzXAG`
 );
-const contractAddress = "0x57fdc470b268675ae5932992d08410abf98a2430";
+const contractAddress = "0xe2ca36365E40e81A8185bB8986d662501dF5F6f2";
 const ABI = require("./CodetributeToken.json");
 const contract = new web3.eth.Contract(ABI, contractAddress);
 const privateKey =
-  "87a7e1d10c78280276541b78c2deb1920f30f4df565a561a6f3ca7a107f03258";
+  "312461e94f57396fa0aa84d2b4132b02cf37e8bd93523011d58ba5e6c7e3903b";
 const account = web3.eth.accounts.privateKeyToAccount(privateKey);
 web3.eth.accounts.wallet.add(account);
 web3.eth.defaultAccount = account.address;
@@ -45,6 +48,7 @@ codetribute.listen(
         }
       } catch (err) {
         console.error(err);
+        res.status(500).json({ status: 500, errorMsg: "Internal Server Error" });
       }
     });
   })
@@ -67,10 +71,8 @@ codetribute.get("/get/check/user/exists/:id", async (req, res) => {
         if (err) res.status(400).json({ status: 400 });
         else {
           if (result.length > 0) {
-            // do exist
-            res.status(409).json({ status: 409 });
+            res.status(400).json({ status: 400 });
           } else {
-            // do not exist
             res.status(200).json({ status: 200 });
           }
         }
@@ -78,7 +80,37 @@ codetribute.get("/get/check/user/exists/:id", async (req, res) => {
     );
   } catch (err) {
     console.error(err);
-    res.status(500).json({ status: 500, msg: "Internal Server Error" });
+    res.status(500).json({ status: 500, errorMsg: "Internal Server Error" });
+  }
+});
+
+codetribute.get("/get/wallet/:user_id", async (req, res) => {
+  const { user_id } = req.params;
+
+  try {
+    await db.query(
+      `
+      SELECT *
+      FROM walletbase
+      WHERE user_id = ?
+      `,
+      [user_id],
+      (err, result, fields) => {
+        if (err) {
+          res.status(400).json({ status: 400, errorMsg: err.sqlMessage });
+        } 
+        else {
+          if (result.length > 0) {
+            res.status(200).json({ status: 200, accountAddress: result[0].wallet_address });
+          } else {
+            res.status(400).json({ status: 400 });
+          }
+        }
+      }
+    );
+  } catch (error) {
+    console.error(err);
+    res.status(500).json({ status: 500, errorMsg: "Internal Server Error" });
   }
 });
 
@@ -108,13 +140,12 @@ codetribute.get("/authenticate/:user_id/:password/", async (req, res) => {
     );
   } catch (err) {
     console.error(err);
-    res.status(500).json({ status: 500, msg: "Internal Server Error" });
+    res.status(500).json({ status: 500, errorMsg: "Internal Server Error" });
   }
 });
 
 // Registration API
-codetribute.post(
-  "/registration/:user_id/:name/:email/:password/:phone_number/:privilege",
+codetribute.post("/registration/:user_id/:name/:email/:password/:phone_number/:privilege",
   async (req, res) => {
     const { user_id, name, email, password, phone_number, privilege } =
       req.params;
@@ -128,23 +159,23 @@ codetribute.post(
         [user_id, name, email, password, phone_number, privilege],
 
         (err, result, fields) => {
-          if (err) res.status(400).json({ status: 400 });
-          else
-            res
-              .status(200)
-              .json({ status: 200, msg: "User registered successfully." });
+          if (err) {
+            res.status(400).json({ status: 400 , errorMsg: err.sqlMessage});
+          }
+          else {
+            res.status(200).json({ status: 200, msg: "User registered successfully." });
+          }
         }
       );
     } catch (err) {
       console.error(err);
-      res.status(500).json({ status: 500, msg: "Internal Server Error" });
+      res.status(500).json({ status: 500, errorMsg: "Internal Server Error" });
     }
   }
 );
 
 codetribute.post("/publish", async (req, res) => {
-  const { project_id, projectName, projectDescription, projectLink, userId } =
-    req.body;
+  const { project_id, projectName, projectDescription, projectLink, userId } = req.body;
 
   try {
     await db.query(
@@ -155,16 +186,15 @@ codetribute.post("/publish", async (req, res) => {
       (err, result, fields) => {
         if (err) {
           console.error(err);
-          res
-            .status(400)
-            .json({ status: 400, error: err.sqlMessage.toString() });
+          res.status(400).json({ status: 400, errorMsg: err.sqlMessage });
         } else {
-          res.status(200).json({ status: 200 });
+          res.status(200).json({ status: 200, msg: 'Project published successfully'});
         }
       }
     );
   } catch (err) {
     console.error(err);
+    res.status(500).json({ status: 500, errorMsg: "Internal Server Error" });
   }
 });
 
@@ -185,12 +215,13 @@ codetribute.post("/post/commit/contributor", async (req, res) => {
         if (err) {
           res.status(400).json({ status: 400, errorMsg: err.sqlMessage });
         } else {
-          res.status(200).json({ status: 200 });
+          res.status(200).json({ status: 200, msg: 'Commit successful' });
         }
       }
     );
   } catch (err) {
     console.error(err);
+    res.status(500).json({ status: 500, errorMsg: "Internal Server Error" });
   }
 });
 
@@ -221,7 +252,7 @@ codetribute.get("/get/projects/publisher/:pid", async (req, res) => {
     );
   } catch (err) {
     console.error(err);
-    res.status(500).json({ status: 500, msg: "Internal Server Error" });
+    res.status(500).json({ status: 500, errorMsg: "Internal Server Error" });
   }
 });
 
@@ -248,7 +279,7 @@ codetribute.get("/get/projects", async (req, res) => {
     );
   } catch (err) {
     console.error(err);
-    res.status(500).json({ status: 500, msg: "Internal Server Error" });
+    res.status(500).json({ status: 500, errorMsg: "Internal Server Error" });
   }
 });
 
@@ -278,7 +309,7 @@ codetribute.get("/get/projects/:pid", async (req, res) => {
     );
   } catch (err) {
     console.error(err);
-    res.status(500).json({ status: 500, msg: "Internal Server Error" });
+    res.status(500).json({ status: 500, errorMsg: "Internal Server Error" });
   }
 });
 
@@ -297,12 +328,18 @@ codetribute.get("/get/commit/count/:project_id", async (req, res) => {
         if (err) {
           res.status(400).json({ status: 400 });
         } else {
-          res.status(200).json(result[0].CommitCount);
+          if (result.length > 0) {
+            res.status(200).json(result[0].CommitCount);
+          }
+          else {
+            res.status(400).json({ status: 400, msg: 'No commit found for such project' });
+          }
         }
       }
     );
   } catch (err) {
     console.error(err);
+    res.status(500).json({ status: 500, errorMsg: "Internal Server Error" });
   }
 });
 
@@ -322,14 +359,14 @@ codetribute.post("/manage/commit/reject/:commit_id", async (req, res) => {
       (err, result, fields) => {
         if (err) {
           res.status(400).json({ status: 400, errorMsg: err.sqlMessage });
-          console.log(err.sqlMessage);
         } else {
-          res.status(200).json({ status: 200, msg: "Update done!" });
+          res.status(200).json({ status: 200, msg: "Commit status updated as 'Rejected'" });
         }
       }
     );
   } catch (err) {
     console.error(err);
+    res.status(500).json({ status: 500, errorMsg: "Internal Server Error" });
   }
 });
 
@@ -347,14 +384,15 @@ codetribute.post("/manage/commit/accept/:commit_id", async (req, res) => {
 
       (err, result, fields) => {
         if (err) {
-          res.status(400).json({ status: 400, msg: "Update unsuccessful!" });
+          res.status(400).json({ status: 400, errorMsg: err.sqlMessage });
         } else {
-          res.status(200).json({ status: 200, msg: "Update done!" });
+          res.status(200).json({ status: 200, msg: "Commit status updated as 'Rejected'" });
         }
       }
     );
   } catch (err) {
     console.error(err);
+    res.status(500).json({ status: 500, errorMsg: "Internal Server Error" });
   }
 });
 
@@ -371,43 +409,53 @@ codetribute.get("/get/commits/projects/:pid", async (req, res) => {
       [pid],
       (err, result, field) => {
         if (err) {
-          res.status(400).json({ status: 400 });
+          res.status(400).json({ status: 400, errorMsg: err.sqlMessage });
         } else {
-          res.status(200).json(result);
+          if (result.length > 0) {
+            res.status(200).json(result);
+          }
+          else {
+            res.status(400).json({status: 400, msg: "No commits found for such project"})
+          }
         }
       }
     );
   } catch (err) {
     console.error(err);
+    res.status(500).json({ status: 500, errorMsg: "Internal Server Error" });
   }
 });
 
-codetribute.post("/recordTx/:_to/:_amount", async (req, res) => {
-  const {_to, _amount} = req.params;
+codetribute.post("/recordTx/:_from/:_to/:_amount", async (req, res) => {
+  const { _from, _to, _amount } = req.params;
+
+  const hash = crypto.createHash('sha1');
+  hash.update(`Transaction${_from}${_to}${_amount}`);
+  const hashedTxId = hash.digest('hex');
+  console.log(hashedTxId);
 
   try {
     await db.query(
       `
-      INSERT INTO transactions (receiver_id, amount)
-      VALUES (?,?)
+      INSERT INTO payments (transaction_id, sender_wallet_address, receiver_wallet_address, amount)
+      VALUES (?,?,?,?)
       `,
-      [_to, _amount],
+      [hashedTxId, _from, _to, _amount],
       (err, result, fields) => {
         if (err) {
-          res.status(400).json({status: 400});
-        }
-        else {
-          res.status(200).json({status: 200});
+          res.status(400).json({ status: 400 , errorMsg: err.sqlMessage});
+        } else {
+          res.status(200).json({ status: 200 , msg: 'Transaction recorded'});
         }
       }
-    )
-  }
-  catch (error) {
+    );
+  } catch (error) {
     console.error(error);
+    res.status(500).json({ status: 500, errorMsg: "Internal Server Error" });
   }
 });
 
-// Transfer token as soon as possible
+// Transfer token as soon as possible ***********
 codetribute.post("/transfer/tokens/:to", async (req, res) => {
   const { to } = req.params;
 
@@ -432,15 +480,13 @@ codetribute.post("/transfer/tokens/:to", async (req, res) => {
           const toAddress = result[0].wallet_id;
 
           contract.methods
-            .transfer(toAddress, 1000)
+            .transfer(toAddress, 100)
             .send({ from: web3.eth.defaultAccount, gas: 300000 })
             .on("transactionHash", function (hash) {
               console.log("Transaction Hash:", hash);
             })
             .on("confirmation", function (confirmationNumber, receipt) {
               console.log("Confirmation Number:", confirmationNumber);
-              
-
             })
             .on("receipt", function (receipt) {
               console.log("Transaction Receipt:", receipt);
@@ -453,44 +499,107 @@ codetribute.post("/transfer/tokens/:to", async (req, res) => {
             status: 200,
             _amount: 100,
             _to: result[0].owner_id,
-            _wallet: result[0].wallet_id
+            _wallet: result[0].wallet_id,
           });
         }
       }
     );
   } catch (error) {
     console.error(error);
+    res.status(500).json({ status: 500, errorMsg: "Internal Server Error" });
   }
 });
 
 codetribute.get("/get/history/:id", async (req, res) => {
-  const {id} = req.params;
+  const { id } = req.params;
 
   try {
     await db.query(
       `
                 SELECT *
-                FROM transactions T
-                WHERE T.receiver_wallet_id = ? OR T.sender_wallet_id = ?
-                
+                FROM payments
+                WHERE sender_user_id = ? OR receiver_user_id = ?
             `,
       [id, id],
 
       (err, result, field) => {
-        if (err) res.status(400).json({ status: 400 });
+        if (err) {
+          res.status(400).json({ status: 400 , errorMsg: err.sqlMessage});
+        }
         else {
           if (result.length > 0) {
             res.status(200).json(result);
           } else {
-            res.status(400).json({ status: 400 });
+            res.status(400).json({ status: 400 , msg: 'No transaction history for this wallet account'});
           }
         }
-        console.table(result);
       }
     );
   } catch (err) {
     console.error(err);
-    res.status(500).json({ status: 500, msg: "Internal Server Error" });
+    res.status(500).json({ status: 500, errorMsg: "Internal Server Error" });
+  }
+});
+
+codetribute.get("/get/tx/incoming/:id", async (req, res) => {
+  const {id} = req.params;
+
+  try {
+    await db.query(
+      `
+      SELECT *
+      FROM payments
+      WHERE receiver_user_id = ?
+      `,
+      [id],
+      (err, result, fields) => {
+        if (err) {
+          res.status(400).json({ status: 400 , errorMsg: err.sqlMessage});
+        }
+        else {
+          if (result.length > 0) {
+            res.status(200).json(result);
+          } else {
+            res.status(400).json({ status: 400 , msg: 'No incoming tx found for such user'});
+          }
+        }        
+      }
+    )
+  }
+  catch(err) {
+    console.error(err);
+    res.status(500).json({ status: 500, errorMsg: "Internal Server Error" });
+  }
+});
+
+codetribute.get("/get/tx/outgoing/:id", async (req, res) => {
+  const {id} = req.params;
+
+  try {
+    await db.query(
+      `
+      SELECT *
+      FROM payments
+      WHERE sender_user_id = ?
+      `,
+      [id],
+      (err, result, fields) => {
+        if (err) {
+          res.status(400).json({ status: 400 , errorMsg: err.sqlMessage});
+        }
+        else {
+          if (result.length > 0) {
+            res.status(200).json(result);
+          } else {
+            res.status(400).json({ status: 400 , msg: 'No outgoing tx found for such user'});
+          }
+        }        
+      }
+    )
+  }
+  catch(err) {
+    console.error(err);
+    res.status(500).json({ status: 500, errorMsg: "Internal Server Error" });
   }
 });
 
@@ -509,19 +618,21 @@ codetribute.get("/get/commit/project/:pid", async (req, res) => {
       [pid],
 
       (err, result, field) => {
-        if (err) res.status(400).json({ status: 400 });
+        if (err) {
+          res.status(400).json({ status: 400 , errorMsg: err.sqlMessage});
+        }
         else {
           if (result.length > 0) {
             res.status(200).json(result);
           } else {
-            res.status(400).json({ status: 400 });
+            res.status(400).json({ status: 400 , msg: 'No commit found for such project id'});
           }
         }
       }
     );
   } catch (err) {
     console.error(err);
-    res.status(500).json({ status: 500, msg: "Internal Server Error" });
+    res.status(500).json({ status: 500, errorMsg: "Internal Server Error" });
   }
 });
 
@@ -542,19 +653,18 @@ codetribute.get("/get/commit/contributor/:cid", async (req, res) => {
       (err, result, field) => {
         if (err) {
           res.status(400).json({ status: 400, errorMsg: err.sqlMessage });
-          console.log(err.sqlMessage);
         } else {
           if (result.length > 0) {
             res.status(200).json(result);
           } else {
-            res.status(400).json({ status: 400 });
+            res.status(400).json({ status: 400 , msg: 'No commit found for this contributor.'});
           }
         }
       }
     );
   } catch (err) {
     console.error(err);
-    res.status(500).json({ status: 500, msg: "Internal Server Error" });
+    res.status(500).json({ status: 500, errorMsg: "Internal Server Error" });
   }
 });
 
@@ -570,19 +680,19 @@ codetribute.get("/get/commit/success", async (req, res) => {
       [],
 
       (err, result, field) => {
-        if (err) res.status(400).json({ status: 400 });
+        if (err) res.status(400).json({ status: 400 , errorMsg: err.sqlMessage});
         else {
           if (result.length > 0) {
             res.status(200).json(result);
           } else {
-            res.status(400).json({ status: 400 });
+            res.status(400).json({ status: 400 , msg: 'No accepted commits found'});
           }
         }
       }
     );
   } catch (err) {
     console.error(err);
-    res.status(500).json({ status: 500, msg: "Internal Server Error" });
+    res.status(500).json({ status: 500, errorMsg: "Internal Server Error" });
   }
 });
 
@@ -598,18 +708,18 @@ codetribute.get("/get/commit/failure", async (req, res) => {
       [],
 
       (err, result, field) => {
-        if (err) res.status(400).json({ status: 400 });
+        if (err) res.status(400).json({ status: 400 , errorMsg: err.sqlMessage});
         else {
           if (result.length > 0) {
             res.status(200).json(result);
           } else {
-            res.status(400).json({ status: 400 });
+            res.status(400).json({ status: 400 , msg: 'No rejected commits found'});
           }
         }
       }
     );
   } catch (err) {
     console.error(err);
-    res.status(500).json({ status: 500, msg: "Internal Server Error" });
+    res.status(500).json({ status: 500, errorMsg: "Internal Server Error" });
   }
 });
