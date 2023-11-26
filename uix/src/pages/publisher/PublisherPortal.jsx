@@ -1,7 +1,7 @@
 import CommitImg from "../../assets/images/commit-icon.png";
 import EditProjectImg from "../../assets/images/Edit.png";
 import CreateListingImg from "../../assets/images/list.png";
-
+import PayImg from "../../assets/images/Pay.png";
 import { NavLink } from "react-router-dom";
 import { useState } from "react";
 
@@ -166,6 +166,10 @@ const PublisherPortal = ({ loginCredentials }) => {
         <NavLink to="/wallet" className=" it-1">
           <img src={CommitImg} className="item-icon" />
           <p className="item-header">WALLET</p>
+        </NavLink>
+        <NavLink to="/view-activity-logs" className="it-1">
+          <img src={PayImg} className="item-icon" alt="Wallet Icon" />
+          <p className="item-header">VIEW YOUR ACTIVITY</p>
         </NavLink>
       </div>
     </>

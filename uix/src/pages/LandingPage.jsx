@@ -11,7 +11,7 @@ const LandingPage = ({ setLogin }) => {
   const [selectedPrivilege, setSelectedPrivilege] = useState("");
   const handleClose = () => setShow(false);
   const handleShow = () => setShow(true);
-
+  const [loginInfo, setLoginInfo] = useState(null);
   const handlePrivilegeChange = (event) => {
     setSelectedPrivilege(event.target.value);
   };
@@ -80,11 +80,15 @@ const LandingPage = ({ setLogin }) => {
       );
 
       const data = await res.json();
-
-      if (data.status === 200) {
+      
+      console.log(data.userdata);
+      if (data.status === 200 && data.userdata.status == "Active") {
         setLogin(data.userdata);
         alert(`Logged in as ${data.userdata.privilege}`);
         navigateTo(`/${data.userdata.privilege}-portal`);
+      }
+      else if (data.userdata.status == "Suspended") {
+        alert(`Your account is suspended, please contact an admin immediately.`);
       } else {
         alert("Please rectify your credentials and try logging in again.");
       }
@@ -205,8 +209,8 @@ const LandingPage = ({ setLogin }) => {
               <Form.Label>As</Form.Label>
               <Form.Control
                 as="select"
-                onChange={handlePrivilegeChange} // Handle the change event
-                value={selectedPrivilege} // Set the selected value from state
+                onChange={handlePrivilegeChange}
+                value={selectedPrivilege}
               >
                 <option value="">Select Privilege</option>
                 <option value="Contributor">Contributor</option>

@@ -25,14 +25,6 @@ const { log } = require("console");
 const web3 = new Web3(
   "https://eth-sepolia.g.alchemy.com/v2/f_R62a50s5Tn4qsHaz0n0AyoIUkwzXAG"
 );
-// const tokenAddress = "0xe2ca36365E40e81A8185bB8986d662501dF5F6f2";
-// const TokenABI = require("./CodetributeToken.json");
-// const tokenAbi = TokenABI;
-// const tokenContract = new web3.eth.Contract(tokenAbi, tokenAddress);
-// const tokenBalance = await tokenContract.methods
-//           .balanceOf(userAddress)
-//           .call();
-//         setTokenBalance(tokenBalance);
 
 // BACKEND + DATABASE INITIALISATION
 codetribute.listen(
@@ -189,7 +181,7 @@ codetribute.post("/unbanUser/:user_id", async (req, res) => {
         `,
       [user_id],
 
-      (err, result, fields) => {
+      (err) => {
         if (err) {
           res.status(400).json({ status: 400, errorMsg: err.sqlMessage });
         } else {
@@ -217,7 +209,7 @@ const transactional_log_commit = (
       `INSERT INTO transaction_log (user_id, operation_type, table_name, query) 
        VALUES (?,?,?,?)
       `,
-      [user_id, table_name, operation_type, query],
+      [user_id, operation_type, table_name, query],
       (err, result, fields) => {
         if (err) {
           db.rollback();
@@ -235,40 +227,81 @@ const transactional_log_commit = (
 codetribute.get("/view/system/logs/:user_id", async (req, res) => {
   const { user_id } = req.params;
 
-try {
-    if (user_id[0] == 'C' || user_id[0] == 'P') {
-      res.status(400).json({status: 400, msg: 'Insufficient privileges'});
+  try {
+    if (user_id[0] == "C" || user_id[0] == "P") {
+      res.status(400).json({ status: 400, msg: "Insufficient privileges" });
       return;
-    }
-    else {
+    } else {
       await db.query(
         `
         SELECT * 
         FROM transaction_log
-        `, [], 
+        `,
+        [],
         async (err, result, fields) => {
           if (err) {
             await db.rollback();
             res.status(400).json({ status: 400, errorMsg: err.sqlMessage });
             return;
-          }
-          else {
+          } else {
             if (result.length > 0) {
               res.status(200).json(result);
-            }
-            else {
-              res.status(400).json({status: 200, msg: 'No transactional logs found.'});
+            } else {
+              res
+                .status(400)
+                .json({ status: 200, msg: "No transactional logs found." });
             }
           }
         }
       );
       await db.commit();
     }
-} catch (error) {
-  db.rollback();
-  res.status(500).json({ status: 500, errorMsg: `Internal Server Error:\n${error}` });
-  console.error(error);
-}
+  } catch (error) {
+    db.rollback();
+    res
+      .status(500)
+      .json({ status: 500, errorMsg: `Internal Server Error:\n${error}` });
+    console.error(error);
+  }
+});
+
+codetribute.get("/view/activity/logs/:user_id", async (req, res) => {
+  const { user_id } = req.params;
+
+  try {
+    db.beginTransaction();
+    await db.query(
+      `
+        SELECT * 
+        FROM transaction_log
+        WHERE user_id = ?
+        `,
+      [user_id],
+      async (err, result, fields) => {
+        if (err) {
+          await db.rollback();
+          res.status(400).json({ status: 400, errorMsg: err.sqlMessage });
+          return;
+        } else {
+          if (result.length > 0) {
+            db.commit();
+            res.status(200).json(result);
+          } else {
+            db.commit();
+            res
+              .status(400)
+              .json({ status: 200, msg: "No transactional logs found." });
+          }
+        }
+      }
+    );
+  } catch (error) {
+    db.rollback();
+    res
+      .status(500)
+      .json({ status: 500, errorMsg: `Internal Server Error:\n${error}` });
+    console.error(error);
+  }
 });
 
 // Registration API (req.body)
@@ -422,6 +455,7 @@ codetribute.post("/post/commit/contributor", async (req, res) => {
   console.log(commit_id, project_id, contributor_id, commit_path);
 
   try {
+    db.beginTransaction();
     await db.query(
       `
         INSERT INTO commitbase (commit_id, contributor_id, commit_path, project_id)
@@ -431,13 +465,22 @@ codetribute.post("/post/commit/contributor", async (req, res) => {
 
       (err, result, fields) => {
         if (err) {
+          db.rollback();
           res.status(400).json({ status: 400, errorMsg: err.sqlMessage });
         } else {
+          db.commit();
+          transactional_log_commit(
+            contributor_id,
+            "INSERT",
+            "commitbase",
+            `INSERT INTO commitbase (commit_id, contributor_id, commit_path, project_id) VALUES (${commit_id},${contributor_id},${commit_path},${project_id})`
+          );
           res.status(200).json({ status: 200, msg: "Commit successful" });
         }
       }
     );
   } catch (err) {
+    db.rollback();
     console.error(err);
     res.status(500).json({ status: 500, errorMsg: "Internal Server Error" });
   }
@@ -841,12 +884,10 @@ codetribute.post("/transfer/tokens/:from/:to/:amount", async (req, res) => {
                     .json({ status: 400, msg: "Token approval failed" });
                 }
               } else {
-                res
-                  .status(400)
-                  .json({
-                    status: 400,
-                    msg: "Wallet not found for the recipient user",
-                  });
+                res.status(400).json({
+                  status: 400,
+                  msg: "Wallet not found for the recipient user",
+                });
               }
             }
           );

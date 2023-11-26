@@ -1,0 +1,15 @@
+.contributor-portal-container {
+    display: flex;
+    justify-content:space-around;
+    max-width: 1200px; 
+    margin:0%;
+  }
+  
+  .grid-box {
+    display:contents;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 40px; 
+  }
+  
+  /* Add your existing styles for it-1, it-3, item-icon, item-header, etc. */
+  

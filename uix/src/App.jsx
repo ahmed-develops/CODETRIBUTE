@@ -1,5 +1,7 @@
 import {RouterProvider, createBrowserRouter} from "react-router-dom";
 import { useState, useEffect } from "react";
+import "./App.css";
+import Button from "react-bootstrap/esm/Button";
 
 import LandingPage from "./pages/LandingPage";
 import ContributorPortal from "./pages/contributor/ContributorPortal";
@@ -12,10 +14,9 @@ import ViewMyCommits from "./pages/contributor/ViewMyCommits";
 import ViewAllListedProjects from "./pages/contributor/ViewAllListedProjects";
 import ManageUserProfile from "./pages/admin/ManageUserProfile";
 import Wallet from "./pages/Wallet";
-
-import "./App.css";
-import Button from "react-bootstrap/esm/Button";
 import ViewSystemLogs from "./pages/admin/ViewSystemLogs";
+import ViewMyProfile from "./pages/ViewMyProfile";
+import ViewActivityLogs from "./pages/ViewActivityLogs";
 
 function App() {
   const [loginCredentials, setLoginCredentials] = useState(null);
@@ -29,17 +30,25 @@ function App() {
       password: userdata.password,
       phone_number: userdata.phone_number,
       privilege: userdata.privilege,
+      status: userdata.status
     };
+    
     setLoginCredentials(credentials);
-    setLoginState(true);
-    localStorage.setItem("loginCredentials", JSON.stringify(credentials));
+    
+    if (userdata.status == "Active") {
+      setLoginState(true);
+      localStorage.setItem("loginCredentials", JSON.stringify(credentials));
+    }
+    else {
+      setLoginState(false);
+    }
   };
 
   const logout = () => {
+    window.location = '/';
     setLoginCredentials(null);
     setLoginState(false);
     localStorage.removeItem("loginCredentials");
-    window.location = "/";
   };
 
   useEffect(() => {
@@ -49,8 +58,6 @@ function App() {
       setLoginCredentials(parsedCredentials);
     }
   }, [loginState]);
-
-  console.log(loginCredentials);
 
   const router = createBrowserRouter([
     {
@@ -107,6 +114,16 @@ function App() {
       path: "/contributor/view-my-commits",
       element: <ViewMyCommits loginCredentials={loginCredentials} />,
     },
+
+    // Misc
+    {
+      path: "/view-my-profile",
+      element: <ViewMyProfile loginCredentials={loginCredentials}/>
+    },
+    {
+      path: "/view-activity-logs",
+      element: <ViewActivityLogs loginCredentials={loginCredentials}/>
+    }
   ]);
 
   return (
@@ -114,11 +131,11 @@ function App() {
       {loginCredentials?.user_id && loginState ? (
         <>
           <div className="app-container">
+          
             <Button
               className="logout-button"
               variant="primary"
               onClick={logout}
-              
             >
               Logout
             </Button>
@@ -126,7 +143,9 @@ function App() {
           <RouterProvider router={router} />
         </>
       ) : (
-        <RouterProvider router={router} />
+        <>
+          <RouterProvider router={router} />
+        </>
       )}
     </>
   );
