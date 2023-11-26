@@ -1,7 +1,8 @@
-import { useEffect, useState } from "react";
+import React, { useEffect, useState } from "react";
 import Button from "react-bootstrap/Button";
 import Form from "react-bootstrap/Form";
 import Modal from "react-bootstrap/Modal";
+import Table from "react-bootstrap/Table";
 import "../../assets/ViewProjects.css";
 
 const ViewAllListedProjects = ({ loginCredentials }) => {
@@ -16,21 +17,17 @@ const ViewAllListedProjects = ({ loginCredentials }) => {
   const handleClose = () => setShow(false);
   const handleShow = () => setShow(true);
 
-  const handleRoleChange = (event) => {
-    setSelectedRole(event.target.value);
-  };
-
   const handleInputChange = (event) => {
     const { name, value } = event.target;
     setFormData({
       ...formData,
-      [name] : value
+      [name]: value,
     });
   };
 
   const commitToProject = async (event) => {
     event.preventDefault();
-    
+
     try {
       const res = await fetch(`http://localhost:3300/post/commit/contributor`, {
         method: "POST",
@@ -51,7 +48,7 @@ const ViewAllListedProjects = ({ loginCredentials }) => {
         alert(`${data.errorMsg}`);
       }
     } catch (err) {
-        console.error(err);
+      console.error(err);
     }
   };
 
@@ -97,6 +94,7 @@ const ViewAllListedProjects = ({ loginCredentials }) => {
                 type="text"
                 value={formData.project_id}
                 disabled
+                className="flat-input"
               />
             </Form.Group>
             <Form.Group className="mb-3">
@@ -107,6 +105,7 @@ const ViewAllListedProjects = ({ loginCredentials }) => {
                 value={formData.commit_id}
                 onChange={handleInputChange}
                 placeholder="e.g Commit_1 || ProjectName_Commit1"
+                className="flat-input"
               />
             </Form.Group>
             <Form.Group className="mb-3">
@@ -116,6 +115,7 @@ const ViewAllListedProjects = ({ loginCredentials }) => {
                 type="text"
                 value={formData.contributor_id}
                 disabled
+                className="flat-input"
               />
             </Form.Group>
             <Form.Group className="mb-3">
@@ -125,6 +125,7 @@ const ViewAllListedProjects = ({ loginCredentials }) => {
                 type="text"
                 value={formData.commit_path}
                 onChange={handleInputChange}
+                className="flat-input"
               />
             </Form.Group>
           </Form>
@@ -140,7 +141,7 @@ const ViewAllListedProjects = ({ loginCredentials }) => {
       </Modal>
 
       <div className="projects-container">
-        <table>
+        <Table striped bordered hover responsive className="custom-table">
           <thead>
             <tr>
               <th>ID</th>
@@ -149,7 +150,7 @@ const ViewAllListedProjects = ({ loginCredentials }) => {
               <th>Code Path</th>
               <th>Tokens offered</th>
               <th>Tokens required</th>
-              <th></th>
+              <th>Action</th>
             </tr>
           </thead>
           <tbody>
@@ -161,25 +162,28 @@ const ViewAllListedProjects = ({ loginCredentials }) => {
                 <td className="path-cell">{val.code_path}</td>
                 <td>{val.tokens_offered}</td>
                 <td>{val.tokens_required}</td>
-                <Button
-                  onClick={() => {
-                    handleShow();
-                    setFormData({
-                      ...formData,
-                      project_id: val.project_id,
-                      commit_id: "",
-                      contributor_id: loginCredentials.user_id,
-                      commit_path: "",
-                    });
-                  }}
-                  variant="primary"
-                >
-                  Commit
-                </Button>
+                <td>
+                  <Button
+                    onClick={() => {
+                      handleShow();
+                      setFormData({
+                        ...formData,
+                        project_id: val.project_id,
+                        commit_id: "",
+                        contributor_id: loginCredentials.user_id,
+                        commit_path: "",
+                      });
+                    }}
+                    variant="primary"
+                    className="flat-btn"
+                  >
+                    Commit
+                  </Button>
+                </td>
               </tr>
             ))}
           </tbody>
-        </table>
+        </Table>
       </div>
     </>
   );

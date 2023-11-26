@@ -10,10 +10,12 @@ import ManageCommits from "./pages/publisher/ManageCommits";
 import ViewCommits from "./pages/publisher/ViewCommits";
 import ViewMyCommits from "./pages/contributor/ViewMyCommits";
 import ViewAllListedProjects from "./pages/contributor/ViewAllListedProjects";
+import ManageUserProfile from "./pages/admin/ManageUserProfile";
 import Wallet from "./pages/Wallet";
 
 import "./App.css";
 import Button from "react-bootstrap/esm/Button";
+import ViewSystemLogs from "./pages/admin/ViewSystemLogs";
 
 function App() {
   const [loginCredentials, setLoginCredentials] = useState(null);
@@ -61,7 +63,7 @@ function App() {
     },
     {
       path: "/admin-portal",
-      element: <AdminPortal />,
+      element: <AdminPortal loginCredentials={loginCredentials}/>,
     },
     {
       path: "/contributor-portal",
@@ -70,6 +72,16 @@ function App() {
     {
       path: "/publisher-portal",
       element: <PublisherPortal loginCredentials={loginCredentials} />,
+    },
+
+    // Admin
+    {
+      path: "/admin/manage-user-profile",
+      element: <ManageUserProfile loginCredentials={loginCredentials}/>
+    },
+    {
+      path: "/admin/view-system-logs",
+      element: <ViewSystemLogs loginCredentials={loginCredentials}/>
     },
 
     // Publisher

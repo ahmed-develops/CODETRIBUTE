@@ -46,4 +46,110 @@ table th, table td {
   button:hover {
     background-color: #0056b3;
   }
+
+  .selected-project-details {
+    display: none;
+    padding: 10px;
+    border: 1px solid #ddd;
+    margin-top: 10px;
+  }
   
+  .selected-project-details.show {
+    display: block;
+  }
+
+  .commit-container {
+  overflow: hidden;
+}
+
+.selected-project-details-row {
+  height: 0;
+  overflow: hidden;
+  transition: height 0.3s ease;
+}
+
+.selected-project-details.show {
+  height: auto;
+  overflow: visible;
+}
+
+  
+/* Add this style in your CSS file */
+
+.custom-table {
+  background-color: #3395f6; /* Light gray background color */
+  border-radius: 10px; /* Rounded corners */
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); /* Box shadow for a subtle lift */
+  margin: 20px 0; /* Add some margin for spacing */
+}
+
+.custom-table th,
+.custom-table td {
+  text-align: center; /* Center-align text in cells */
+}
+
+.custom-table thead {
+  background-color: #007bff; /* Header background color */
+  color: #ffffff; /* Header text color */
+}
+
+.custom-table tbody tr:nth-child(even) {
+  background-color: #f0f0f0; /* Alternate row background color */
+}
+
+.custom-table tbody tr:hover {
+  background-color: #e2f2ff; /* Hover row background color */
+}
+
+.flat-input {
+  width: 100%; /* Full width for input */
+  padding: 8px; /* Padding for input */
+  border: 1px solid #ced4da; /* Border color */
+  border-radius: 4px; /* Rounded corners */
+  margin-bottom: 10px; /* Margin below input */
+}
+
+.flat-btn {
+  background-color: #007bff; /* Button background color */
+  color: #ffffff; /* Button text color */
+  border: none; /* Remove button border */
+  padding: 10px 15px; /* Padding for button */
+  border-radius: 4px; /* Rounded corners */
+  cursor: pointer; /* Add pointer cursor on hover */
+}
+
+.flat-btn:hover {
+  background-color: #0056b3; /* Darker background color on hover */
+}
+
+/* Add this style in your CSS file */
+
+/* Flat button style */
+.flat-btn {
+  background-color: #3498db;
+  color: #ffffff;
+  border: none;
+  padding: 10px 15px;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+}
+
+.flat-btn:hover {
+  background-color: #2980b9;
+}
+
+/* Flat input style */
+.flat-input {
+  width: 100%;
+  padding: 10px;
+  border: 1px solid #bdc3c7;
+  border-radius: 4px;
+  margin-bottom: 15px;
+  transition: border-color 0.3s ease;
+}
+
+.flat-input:focus {
+  border-color: #3498db;
+}
+

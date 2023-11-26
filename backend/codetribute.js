@@ -2,7 +2,7 @@
 const express = require("express");
 const codetribute = express();
 
-//
+// FOR SHA1
 const crypto = require("crypto");
 
 // JSON PAYLOAD PARSER
@@ -20,18 +20,19 @@ dotenv.config();
 const db = require("./database/connectivity");
 
 // WEB3JS
-const Web3 = require("web3");
+const { Web3 } = require("web3");
+const { log } = require("console");
 const web3 = new Web3(
-  `https://eth-sepolia.g.alchemy.com/v2/f_R62a50s5Tn4qsHaz0n0AyoIUkwzXAG`
+  "https://eth-sepolia.g.alchemy.com/v2/f_R62a50s5Tn4qsHaz0n0AyoIUkwzXAG"
 );
-const contractAddress = "0xe2ca36365E40e81A8185bB8986d662501dF5F6f2";
-const ABI = require("./CodetributeToken.json");
-const contract = new web3.eth.Contract(ABI, contractAddress);
-const privateKey =
-  "312461e94f57396fa0aa84d2b4132b02cf37e8bd93523011d58ba5e6c7e3903b";
-const account = web3.eth.accounts.privateKeyToAccount(privateKey);
-web3.eth.accounts.wallet.add(account);
-web3.eth.defaultAccount = account.address;
+// const tokenAddress = "0xe2ca36365E40e81A8185bB8986d662501dF5F6f2";
+// const TokenABI = require("./CodetributeToken.json");
+// const tokenAbi = TokenABI;
+// const tokenContract = new web3.eth.Contract(tokenAbi, tokenAddress);
+// const tokenBalance = await tokenContract.methods
+//           .balanceOf(userAddress)
+//           .call();
+//         setTokenBalance(tokenBalance);
 
 // BACKEND + DATABASE INITIALISATION
 codetribute.listen(
@@ -48,7 +49,9 @@ codetribute.listen(
         }
       } catch (err) {
         console.error(err);
-        res.status(500).json({ status: 500, errorMsg: "Internal Server Error" });
+        res
+          .status(500)
+          .json({ status: 500, errorMsg: "Internal Server Error" });
       }
     });
   })
@@ -98,10 +101,11 @@ codetribute.get("/get/wallet/:user_id", async (req, res) => {
       (err, result, fields) => {
         if (err) {
           res.status(400).json({ status: 400, errorMsg: err.sqlMessage });
-        } 
-        else {
+        } else {
           if (result.length > 0) {
-            res.status(200).json({ status: 200, accountAddress: result[0].wallet_address });
+            res
+              .status(200)
+              .json({ status: 200, accountAddress: result[0].wallet_address });
           } else {
             res.status(400).json({ status: 400 });
           }
@@ -144,8 +148,218 @@ codetribute.get("/authenticate/:user_id/:password/", async (req, res) => {
   }
 });
 
+// Ban user API
+codetribute.post("/banUser/:user_id", async (req, res) => {
+  const { user_id } = req.params;
+
+  try {
+    await db.query(
+      `
+          UPDATE users
+          SET status = "Suspended"
+          WHERE user_id = ?
+        `,
+      [user_id],
+
+      (err, result, fields) => {
+        if (err) {
+          res.status(400).json({ status: 400, errorMsg: err.sqlMessage });
+        } else {
+          res
+            .status(200)
+            .json({ status: 200, msg: "User suspended until further notice." });
+        }
+      }
+    );
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ status: 500, errorMsg: "Internal Server Error" });
+  }
+});
+
+codetribute.post("/unbanUser/:user_id", async (req, res) => {
+  const { user_id } = req.params;
+
+  try {
+    await db.query(
+      `
+          UPDATE users
+          SET status = "Active"
+          WHERE user_id = ?
+        `,
+      [user_id],
+
+      (err, result, fields) => {
+        if (err) {
+          res.status(400).json({ status: 400, errorMsg: err.sqlMessage });
+        } else {
+          res
+            .status(200)
+            .json({ status: 200, msg: "User' status is active now." });
+        }
+      }
+    );
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ status: 500, errorMsg: "Internal Server Error" });
+  }
+});
+
+const transactional_log_commit = (
+  user_id,
+  operation_type,
+  table_name,
+  query
+) => {
+  try {
+    db.beginTransaction();
+    db.query(
+      `INSERT INTO transaction_log (user_id, operation_type, table_name, query) 
+       VALUES (?,?,?,?)
+      `,
+      [user_id, table_name, operation_type, query],
+      (err, result, fields) => {
+        if (err) {
+          db.rollback();
+        } else {
+          db.commit();
+        }
+      }
+    );
+  } catch (error) {
+    console.error(error);
+    db.rollback();
+  }
+};
+
+codetribute.get("/view/system/logs/:user_id", async (req, res) => {
+  const { user_id } = req.params;
+
+try {
+    if (user_id[0] == 'C' || user_id[0] == 'P') {
+      res.status(400).json({status: 400, msg: 'Insufficient privileges'});
+      return;
+    }
+    else {
+      await db.query(
+        `
+        SELECT * 
+        FROM transaction_log
+        `, [], 
+        async (err, result, fields) => {
+          if (err) {
+            await db.rollback();
+            res.status(400).json({ status: 400, errorMsg: err.sqlMessage });
+            return;
+          }
+          else {
+            if (result.length > 0) {
+              res.status(200).json(result);
+            }
+            else {
+              res.status(400).json({status: 200, msg: 'No transactional logs found.'});
+            }
+          }
+        }
+      );
+      await db.commit();
+    }
+} catch (error) {
+  db.rollback();
+  res.status(500).json({ status: 500, errorMsg: `Internal Server Error:\n${error}` });
+  console.error(error);
+}
+});
+
+// Registration API (req.body)
+codetribute.post("/registration/:actor_id", async (req, res) => {
+  const { actor_id } = req.params;
+  const { user_id, name, email, password, phone_number } = req.body;
+
+  let privilege;
+
+  if (user_id[0] == "C") {
+    privilege = "Contributor";
+  } else if (user_id[0] == "P") {
+    privilege = "Publisher";
+  }
+
+  try {
+    await db.beginTransaction();
+    await db.query(
+      `
+            INSERT INTO users (user_id, name, email, password, phone_number, privilege)
+            VALUES (?,?,?,?,?,?)
+          `,
+      [user_id, name, email, password, phone_number, privilege],
+
+      async (err, result, fields) => {
+        if (err) {
+          await db.rollback();
+          res.status(400).json({ status: 400, errorMsg: err.sqlMessage });
+        } else {
+          res
+            .status(200)
+            .json({ status: 200, msg: "User registered successfully." });
+        }
+      }
+    );
+    await db.commit();
+    transactional_log_commit(
+      actor_id,
+      "INSERT",
+      "users",
+      `INSERT INTO users (user_id, name, email, password, phone_number, privilege VALUES (${user_id},${name},${email},${password},${phone_number},${privilege})`
+    );
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ status: 500, errorMsg: "Internal Server Error" });
+    await db.rollback();
+  }
+});
+
+codetribute.post("/update/user/:actor_id/:user_id", async (req, res) => {
+  const { actor_id, user_id } = req.params;
+  const { name, email, password, phone_number } = req.body;
+
+  try {
+    await db.beginTransaction();
+    await db.query(
+      `
+        UPDATE users
+        SET name=?, email=?, password=?, phone_number=?
+        WHERE user_id=?
+      `,
+      [name, email, password, phone_number, user_id],
+
+      async (err, result, fields) => {
+        if (err) {
+          await db.rollback();
+          res.status(400).json({ status: 400, errorMsg: err.sqlMessage });
+        } else {
+          res
+            .status(200)
+            .json({ status: 200, msg: "User profile updated successfully." });
+        }
+      }
+    );
+    await db.commit();
+    transactional_log_commit(
+      actor_id,
+      "UPDATE",
+      "users",
+      `UPDATE users SET name=${name}, email=${email}, password=${password}, phone_number=${phone_number} WHERE user_id=${user_id}`
+    );
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ status: 500, errorMsg: "Internal Server Error" });
+    await db.rollback();
+  }
+});
+
 // Registration API
-codetribute.post("/registration/:user_id/:name/:email/:password/:phone_number/:privilege",
+codetribute.post(
+  "/registration/:user_id/:name/:email/:password/:phone_number/:privilege",
   async (req, res) => {
     const { user_id, name, email, password, phone_number, privilege } =
       req.params;
@@ -160,10 +374,11 @@ codetribute.post("/registration/:user_id/:name/:email/:password/:phone_number/:p
 
         (err, result, fields) => {
           if (err) {
-            res.status(400).json({ status: 400 , errorMsg: err.sqlMessage});
-          }
-          else {
-            res.status(200).json({ status: 200, msg: "User registered successfully." });
+            res.status(400).json({ status: 400, errorMsg: err.sqlMessage });
+          } else {
+            res
+              .status(200)
+              .json({ status: 200, msg: "User registered successfully." });
           }
         }
       );
@@ -175,20 +390,23 @@ codetribute.post("/registration/:user_id/:name/:email/:password/:phone_number/:p
 );
 
 codetribute.post("/publish", async (req, res) => {
-  const { project_id, projectName, projectDescription, projectLink, userId } = req.body;
+  const { project_id, projectName, projectDescription, projectLink, user_id } =
+    req.body;
 
   try {
     await db.query(
       `INSERT INTO projectbase (project_id, project_name, project_description, publisher_id, code_path)
       VALUES (?,?,?,?,?)`,
-      [project_id, projectName, projectDescription, userId, projectLink],
+      [project_id, projectName, projectDescription, user_id, projectLink],
 
       (err, result, fields) => {
         if (err) {
           console.error(err);
           res.status(400).json({ status: 400, errorMsg: err.sqlMessage });
         } else {
-          res.status(200).json({ status: 200, msg: 'Project published successfully'});
+          res
+            .status(200)
+            .json({ status: 200, msg: "Project published successfully" });
         }
       }
     );
@@ -215,7 +433,7 @@ codetribute.post("/post/commit/contributor", async (req, res) => {
         if (err) {
           res.status(400).json({ status: 400, errorMsg: err.sqlMessage });
         } else {
-          res.status(200).json({ status: 200, msg: 'Commit successful' });
+          res.status(200).json({ status: 200, msg: "Commit successful" });
         }
       }
     );
@@ -330,15 +548,99 @@ codetribute.get("/get/commit/count/:project_id", async (req, res) => {
         } else {
           if (result.length > 0) {
             res.status(200).json(result[0].CommitCount);
-          }
-          else {
-            res.status(400).json({ status: 400, msg: 'No commit found for such project' });
+          } else {
+            res
+              .status(400)
+              .json({ status: 400, msg: "No commit found for such project" });
           }
         }
       }
     );
   } catch (err) {
     console.error(err);
+    res.status(500).json({ status: 500, errorMsg: "Internal Server Error" });
+  }
+});
+
+codetribute.get("/get/publishers/", async (req, res) => {
+  try {
+    await db.query(
+      `
+      SELECT *
+      FROM users
+      WHERE privilege LIKE 'P%'     
+      `,
+      [],
+      (err, publishers, fields) => {
+        if (err) {
+          res.status(400).json({ status: 400, errorMsg: err.sqlMessage });
+        } else {
+          if (publishers.length > 0) {
+            res.status(200).json(publishers);
+          } else {
+            res.status(400).json({ status: 400, msg: "No users found" });
+          }
+        }
+      }
+    );
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ status: 500, errorMsg: "Internal Server Error" });
+  }
+});
+
+// GET CONTRIBUTOR PROFILE DATA
+codetribute.get("/get/contributors/", async (req, res) => {
+  try {
+    await db.query(
+      `
+      SELECT *
+      FROM users
+      WHERE privilege LIKE 'C%'    
+      `,
+      [],
+      (err, contributors, fields) => {
+        if (err) {
+          res.status(400).json({ status: 400, errorMsg: err.sqlMessage });
+        } else {
+          if (contributors.length > 0) {
+            res.status(200).json(contributors);
+          } else {
+            res.status(400).json({ status: 400, msg: "No contributors found" });
+          }
+        }
+      }
+    );
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ status: 500, errorMsg: "Internal Server Error" });
+  }
+});
+
+// GET ALL USERS EXCEPT ADMINS
+codetribute.get("/get/allUsersExceptAdmins/", async (req, res) => {
+  try {
+    await db.query(
+      `
+      SELECT *
+      FROM users
+      WHERE privilege LIKE 'C%' OR privilege LIKE 'P%'     
+      `,
+      [],
+      (err, users, fields) => {
+        if (err) {
+          res.status(400).json({ status: 400, errorMsg: err.sqlMessage });
+        } else {
+          if (users.length > 0) {
+            res.status(200).json(users);
+          } else {
+            res.status(400).json({ status: 400, msg: "No users found" });
+          }
+        }
+      }
+    );
+  } catch (error) {
+    console.error(error);
     res.status(500).json({ status: 500, errorMsg: "Internal Server Error" });
   }
 });
@@ -360,7 +662,9 @@ codetribute.post("/manage/commit/reject/:commit_id", async (req, res) => {
         if (err) {
           res.status(400).json({ status: 400, errorMsg: err.sqlMessage });
         } else {
-          res.status(200).json({ status: 200, msg: "Commit status updated as 'Rejected'" });
+          res
+            .status(200)
+            .json({ status: 200, msg: "Commit status updated as 'Rejected'" });
         }
       }
     );
@@ -386,7 +690,9 @@ codetribute.post("/manage/commit/accept/:commit_id", async (req, res) => {
         if (err) {
           res.status(400).json({ status: 400, errorMsg: err.sqlMessage });
         } else {
-          res.status(200).json({ status: 200, msg: "Commit status updated as 'Rejected'" });
+          res
+            .status(200)
+            .json({ status: 200, msg: "Commit status updated as 'Rejected'" });
         }
       }
     );
@@ -413,9 +719,10 @@ codetribute.get("/get/commits/projects/:pid", async (req, res) => {
         } else {
           if (result.length > 0) {
             res.status(200).json(result);
-          }
-          else {
-            res.status(400).json({status: 400, msg: "No commits found for such project"})
+          } else {
+            res
+              .status(400)
+              .json({ status: 400, msg: "No commits found for such project" });
           }
         }
       }
@@ -429,23 +736,23 @@ codetribute.get("/get/commits/projects/:pid", async (req, res) => {
 codetribute.post("/recordTx/:_from/:_to/:_amount", async (req, res) => {
   const { _from, _to, _amount } = req.params;
 
-  const hash = crypto.createHash('sha1');
+  const hash = crypto.createHash("sha1");
   hash.update(`Transaction${_from}${_to}${_amount}`);
-  const hashedTxId = hash.digest('hex');
+  const hashedTxId = hash.digest("hex");
   console.log(hashedTxId);
 
   try {
     await db.query(
       `
-      INSERT INTO payments (transaction_id, sender_wallet_address, receiver_wallet_address, amount)
+      INSERT INTO payments (transaction_id, sender_user_id, receiver_user_id, amount)
       VALUES (?,?,?,?)
       `,
       [hashedTxId, _from, _to, _amount],
       (err, result, fields) => {
         if (err) {
-          res.status(400).json({ status: 400 , errorMsg: err.sqlMessage});
+          res.status(400).json({ status: 400, errorMsg: err.sqlMessage });
         } else {
-          res.status(200).json({ status: 200 , msg: 'Transaction recorded'});
+          res.status(200).json({ status: 200, msg: "Transaction recorded" });
         }
       }
     );
@@ -455,52 +762,98 @@ codetribute.post("/recordTx/:_from/:_to/:_amount", async (req, res) => {
   }
 });
 
+// codetribute.get("/get/senderId/:id", async (req, res)=> {
+//   const {id } = req.params;
+
+//   try {
+
+//     await db.query(
+//       `
+//       SELECT *
+//       FROM walletbase
+//       WHERE user_id
+//       `
+//   }
+//   catch (err) {
+//     console.error(err);
+//   }
+// })
+
 // Transfer token as soon as possible ***********
-codetribute.post("/transfer/tokens/:to", async (req, res) => {
-  const { to } = req.params;
+codetribute.post("/transfer/tokens/:from/:to/:amount", async (req, res) => {
+  const { from, to, amount } = req.params;
+  console.log(from, to, amount);
+  let from_address, to_address;
 
   try {
-    if (!to) {
-      res.status(400).json({ status: 400 });
-      return;
-    }
-
+    // Get sender info
     await db.query(
-      `
-        SELECT *
-        FROM walletbase
-        WHERE owner_id = ?
-      `,
-      [to],
+      `SELECT *
+           FROM walletbase
+           WHERE user_id = ?`,
+      [from],
+      async (err, senderInfo, fields) => {
+        from_address = senderInfo[0].wallet_address;
+        if (from_address) {
+          // Get recipient info
+          await db.query(
+            `SELECT *
+                   FROM walletbase
+                   WHERE user_id = ?`,
+            [to],
+            async (err, receiverInfo, fields) => {
+              to_address = receiverInfo[0].wallet_address;
+              console.log(to_address);
 
-      async (err, result, fields) => {
-        if (err) {
-          res.status(400).json({ status: 400 });
+              if (to_address) {
+                // ERC-20 Token Contract Address and ABI
+                const tokenContractAddress =
+                  "0xe2ca36365E40e81A8185bB8986d662501dF5F6f2";
+                const tokenContractAbi = require("./CodetributeToken.json"); // Replace with the actual ABI of your ERC-20 token contract
+
+                const tokenContract = new web3.eth.Contract(
+                  tokenContractAbi,
+                  tokenContractAddress
+                );
+
+                // Approve the transfer
+                const approval = await tokenContract.methods
+                  .approve(to_address, amount)
+                  .send({ from: from_address });
+
+                // Check if the approval was successful
+                if (approval.transactionHash) {
+                  // Perform the actual token transfer
+                  const tokenTransfer = await tokenContract.methods
+                    .transfer(toAddress, amount)
+                    .send({ from: from_address });
+
+                  console.log("Token Transfer Receipt:", tokenTransfer);
+
+                  res.status(200).json({
+                    status: 200,
+                    _amount: amount,
+                    _to: result[0].user_id,
+                  });
+                } else {
+                  res
+                    .status(400)
+                    .json({ status: 400, msg: "Token approval failed" });
+                }
+              } else {
+                res
+                  .status(400)
+                  .json({
+                    status: 400,
+                    msg: "Wallet not found for the recipient user",
+                  });
+              }
+            }
+          );
         } else {
-          const toAddress = result[0].wallet_id;
-
-          contract.methods
-            .transfer(toAddress, 100)
-            .send({ from: web3.eth.defaultAccount, gas: 300000 })
-            .on("transactionHash", function (hash) {
-              console.log("Transaction Hash:", hash);
-            })
-            .on("confirmation", function (confirmationNumber, receipt) {
-              console.log("Confirmation Number:", confirmationNumber);
-            })
-            .on("receipt", function (receipt) {
-              console.log("Transaction Receipt:", receipt);
-            })
-            .on("error", function (error, receipt) {
-              console.error("Transaction Error:", error);
-            });
-
-          res.status(200).json({
-            status: 200,
-            _amount: 100,
-            _to: result[0].owner_id,
-            _wallet: result[0].wallet_id,
-          });
+          res
+            .status(400)
+            .json({ status: 400, msg: "Wallet not found for the sender user" });
         }
       }
     );
@@ -524,13 +877,15 @@ codetribute.get("/get/history/:id", async (req, res) => {
 
       (err, result, field) => {
         if (err) {
-          res.status(400).json({ status: 400 , errorMsg: err.sqlMessage});
-        }
-        else {
+          res.status(400).json({ status: 400, errorMsg: err.sqlMessage });
+        } else {
           if (result.length > 0) {
             res.status(200).json(result);
           } else {
-            res.status(400).json({ status: 400 , msg: 'No transaction history for this wallet account'});
+            res.status(400).json({
+              status: 400,
+              msg: "No transaction history for this wallet account",
+            });
           }
         }
       }
@@ -542,7 +897,7 @@ codetribute.get("/get/history/:id", async (req, res) => {
 });
 
 codetribute.get("/get/tx/incoming/:id", async (req, res) => {
-  const {id} = req.params;
+  const { id } = req.params;
 
   try {
     await db.query(
@@ -554,26 +909,26 @@ codetribute.get("/get/tx/incoming/:id", async (req, res) => {
       [id],
       (err, result, fields) => {
         if (err) {
-          res.status(400).json({ status: 400 , errorMsg: err.sqlMessage});
-        }
-        else {
+          res.status(400).json({ status: 400, errorMsg: err.sqlMessage });
+        } else {
           if (result.length > 0) {
             res.status(200).json(result);
           } else {
-            res.status(400).json({ status: 400 , msg: 'No incoming tx found for such user'});
+            res
+              .status(400)
+              .json({ status: 400, msg: "No incoming tx found for such user" });
           }
-        }        
+        }
       }
-    )
-  }
-  catch(err) {
+    );
+  } catch (err) {
     console.error(err);
     res.status(500).json({ status: 500, errorMsg: "Internal Server Error" });
   }
 });
 
 codetribute.get("/get/tx/outgoing/:id", async (req, res) => {
-  const {id} = req.params;
+  const { id } = req.params;
 
   try {
     await db.query(
@@ -585,19 +940,19 @@ codetribute.get("/get/tx/outgoing/:id", async (req, res) => {
       [id],
       (err, result, fields) => {
         if (err) {
-          res.status(400).json({ status: 400 , errorMsg: err.sqlMessage});
-        }
-        else {
+          res.status(400).json({ status: 400, errorMsg: err.sqlMessage });
+        } else {
           if (result.length > 0) {
             res.status(200).json(result);
           } else {
-            res.status(400).json({ status: 400 , msg: 'No outgoing tx found for such user'});
+            res
+              .status(400)
+              .json({ status: 400, msg: "No outgoing tx found for such user" });
           }
-        }        
+        }
       }
-    )
-  }
-  catch(err) {
+    );
+  } catch (err) {
     console.error(err);
     res.status(500).json({ status: 500, errorMsg: "Internal Server Error" });
   }
@@ -619,13 +974,15 @@ codetribute.get("/get/commit/project/:pid", async (req, res) => {
 
       (err, result, field) => {
         if (err) {
-          res.status(400).json({ status: 400 , errorMsg: err.sqlMessage});
-        }
-        else {
+          res.status(400).json({ status: 400, errorMsg: err.sqlMessage });
+        } else {
           if (result.length > 0) {
             res.status(200).json(result);
           } else {
-            res.status(400).json({ status: 400 , msg: 'No commit found for such project id'});
+            res.status(400).json({
+              status: 400,
+              msg: "No commit found for such project id",
+            });
           }
         }
       }
@@ -657,7 +1014,10 @@ codetribute.get("/get/commit/contributor/:cid", async (req, res) => {
           if (result.length > 0) {
             res.status(200).json(result);
           } else {
-            res.status(400).json({ status: 400 , msg: 'No commit found for this contributor.'});
+            res.status(400).json({
+              status: 400,
+              msg: "No commit found for this contributor.",
+            });
           }
         }
       }
@@ -680,12 +1040,15 @@ codetribute.get("/get/commit/success", async (req, res) => {
       [],
 
       (err, result, field) => {
-        if (err) res.status(400).json({ status: 400 , errorMsg: err.sqlMessage});
+        if (err)
+          res.status(400).json({ status: 400, errorMsg: err.sqlMessage });
         else {
           if (result.length > 0) {
             res.status(200).json(result);
           } else {
-            res.status(400).json({ status: 400 , msg: 'No accepted commits found'});
+            res
+              .status(400)
+              .json({ status: 400, msg: "No accepted commits found" });
           }
         }
       }
@@ -708,12 +1071,15 @@ codetribute.get("/get/commit/failure", async (req, res) => {
       [],
 
       (err, result, field) => {
-        if (err) res.status(400).json({ status: 400 , errorMsg: err.sqlMessage});
+        if (err)
+          res.status(400).json({ status: 400, errorMsg: err.sqlMessage });
         else {
           if (result.length > 0) {
             res.status(200).json(result);
           } else {
-            res.status(400).json({ status: 400 , msg: 'No rejected commits found'});
+            res
+              .status(400)
+              .json({ status: 400, msg: "No rejected commits found" });
           }
         }
       }

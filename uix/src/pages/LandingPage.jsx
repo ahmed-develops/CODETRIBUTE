@@ -8,12 +8,12 @@ import Navbar from "../components/Navbar";
 const LandingPage = ({ setLogin }) => {
   const navigateTo = useNavigate();
   const [show, setShow] = useState(false);
-  const [selectedRole, setSelectedRole] = useState("");
+  const [selectedPrivilege, setSelectedPrivilege] = useState("");
   const handleClose = () => setShow(false);
   const handleShow = () => setShow(true);
 
-  const handleRoleChange = (event) => {
-    setSelectedRole(event.target.value);
+  const handlePrivilegeChange = (event) => {
+    setSelectedPrivilege(event.target.value);
   };
 
   const register = async (event) => {
@@ -24,7 +24,7 @@ const LandingPage = ({ setLogin }) => {
     const email = document.querySelector("#r_email").value;
     const password = document.querySelector("#r_password").value;
     const phone_number = document.querySelector("#r_phoneNumber").value;
-    const privilege = selectedRole;
+    const privilege = selectedPrivilege;
 
     try {
       if (!user_id || !name || !email || !password || !privilege) {
@@ -205,8 +205,8 @@ const LandingPage = ({ setLogin }) => {
               <Form.Label>As</Form.Label>
               <Form.Control
                 as="select"
-                onChange={handleRoleChange} // Handle the change event
-                value={selectedRole} // Set the selected value from state
+                onChange={handlePrivilegeChange} // Handle the change event
+                value={selectedPrivilege} // Set the selected value from state
               >
                 <option value="">Select Privilege</option>
                 <option value="Contributor">Contributor</option>

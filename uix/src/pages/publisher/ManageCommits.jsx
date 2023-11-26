@@ -184,7 +184,7 @@ const ManageCommits = ({ loginCredentials }) => {
                               removeCommit(projectId, commitId);
                               alert("Commit accepted!");
 
-                              const transferTokensAPI = await fetch(`http://localhost:3300/transfer/tokens/${commit.contributor_id}`,
+                              const transferTokensAPI = await fetch(`http://localhost:3300/transfer/tokens/${loginCredentials.user_id}/${commit.contributor_id}/${project.tokens_required}`,
                                 {
                                   method: 'POST',
                                   headers: {
@@ -196,9 +196,9 @@ const ManageCommits = ({ loginCredentials }) => {
                               const APIResponse = await transferTokensAPI.json();
 
                               if (APIResponse.status === 200) {
-                                alert(`Sent ${APIResponse._amount} to ${APIResponse._to}'s wallet [${APIResponse._wallet}]`);
+                                alert(`Sent CTKN${APIResponse._amount} to ${APIResponse._to}`);
                                 
-                                const recordTx = await fetch(`http://localhost:3300/recordTx/${APIResponse._to}/${APIResponse._amount}`,
+                                const recordTx = await fetch(`http://localhost:3300/recordTx/${loginCredentials.user_id}/${APIResponse._to}/${APIResponse._amount}`,
                                 {
                                   method: 'POST',
                                   headers: {
