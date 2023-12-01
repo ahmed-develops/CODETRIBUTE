@@ -4,15 +4,15 @@ import { NavLink } from 'react-router-dom';
 import CommitImg from '../../assets/images/commit-icon.png';
 import ListImg from '../../assets/images/list.png';
 import PayImg from '../../assets/images/pay.png';
-// import '../../assets/ContributorPortal.css';
+import '../../assets/ContributorPortal.css';
 
 const ContributorPortal = ({ loginCredentials }) => {
   return (
-    <div>
-      <ViewMyProfile />
+    <div className="Realgrid">
+      <ViewMyProfile userdata={loginCredentials}/>
 
-      <div>
-        <NavLink to="/contributor/view-all-listed-projects" className=" it-1">
+      <div className="grid-box">
+        <NavLink to="/contributor/view-all-listed-projects" className="it-1">
           <img src={ListImg} className="item-icon" alt="List Icon" />
           <p className="item-header">ALL LISTED PROJECTS</p>
         </NavLink>

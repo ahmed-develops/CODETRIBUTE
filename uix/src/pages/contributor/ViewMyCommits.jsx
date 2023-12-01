@@ -23,21 +23,37 @@ const ViewMyCommits = ({ loginCredentials }) => {
         const data = await res.json();
         console.log(data);
 
-        // Merge commit details for the same occurring project IDs
-        const mergedCommitData = data.reduce((merged, commit) => {
-          const existingProject = merged.find((item) => item.project_id === commit.project_id);
-          if (existingProject) {
-            existingProject.commits.push(commit);
-          } else {
-            merged.push({
-              project_id: commit.project_id,
-              commits: [commit],
-            });
-          }
-          return merged;
-        }, []);
-
-        setCommitData(mergedCommitData);
+        if (Array.isArray(data)) {
+          const mergedCommitData = data.reduce((merged, commit) => {
+            const existingProject = merged.find((item) => item.project_id === commit.project_id);
+            if (existingProject) {
+              existingProject.commits.push(commit);
+            } else {
+              merged.push({
+                project_id: commit.project_id,
+                commits: [commit],
+              });
+            }
+            return merged;
+          }, []);
+          setCommitData(mergedCommitData);
+        }
+        else {
+          let _data = [data];
+          const mergedCommitData = _data.reduce((merged, commit) => {
+            const existingProject = merged.find((item) => item.project_id === commit.project_id);
+            if (existingProject) {
+              existingProject.commits.push(commit);
+            } else {
+              merged.push({
+                project_id: commit.project_id,
+                commits: [commit],
+              });
+            }
+            return merged;
+          }, []);
+          setCommitData(mergedCommitData);
+        }      
       } catch (error) {
         console.error(error);
       }

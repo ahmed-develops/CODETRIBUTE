@@ -4,7 +4,7 @@ import CreateListingImg from "../../assets/images/list.png";
 import PayImg from "../../assets/images/Pay.png";
 import { NavLink } from "react-router-dom";
 import { useState } from "react";
-
+import ViewMyProfile from '../ViewMyProfile';
 import Button from "react-bootstrap/Button";
 import Form from "react-bootstrap/Form";
 import Modal from "react-bootstrap/Modal";
@@ -80,8 +80,8 @@ const PublisherPortal = ({ loginCredentials }) => {
   };
 
   return (
-    <>
-      {/* Create Listing Modal */}
+    <div className="Realgrid">
+    <ViewMyProfile userdata={loginCredentials}/>
       <Modal show={show} onHide={handleClose} animation={true}>
         <Modal.Header closeButton>
           <Modal.Title>List your project</Modal.Title>
@@ -147,7 +147,7 @@ const PublisherPortal = ({ loginCredentials }) => {
 
       {/* Navigational Units */}
       <div className="grid-box">
-        <NavLink to="/publisher/manage-commits" className=" it-1">
+        <NavLink to="/publisher/manage-commits" className="it-1">
           <img src={CommitImg} className="item-icon" />
           <p className="item-header">MANAGE COMMITS</p>
         </NavLink>
@@ -155,24 +155,24 @@ const PublisherPortal = ({ loginCredentials }) => {
           <img src={CreateListingImg} alt="" className="item-icon" />
           <p className="item-header">OPEN PROJECT LISTING</p>
         </NavLink>
-        <NavLink to="/publisher/view-projects" className=" it-3">
+        <NavLink to="/publisher/view-projects" className="it-3">
           <img src={CreateListingImg} alt="" className="item-icon" />
           <p className="item-header">VIEW LISTED PROJECTS</p>
         </NavLink>
-        <NavLink to="/publisher/view-commits" className=" it-1">
+        <NavLink to="/publisher/view-commits" className=" it-4">
           <img src={CommitImg} className="item-icon" />
           <p className="item-header">VIEW COMMITS</p>
         </NavLink>
         <NavLink to="/wallet" className=" it-1">
-          <img src={CommitImg} className="item-icon" />
+          <img src={PayImg} className="item-icon" />
           <p className="item-header">WALLET</p>
         </NavLink>
         <NavLink to="/view-activity-logs" className="it-1">
-          <img src={PayImg} className="item-icon" alt="Wallet Icon" />
+          <img src={EditProjectImg} className="item-icon" alt="Wallet Icon" />
           <p className="item-header">VIEW YOUR ACTIVITY</p>
         </NavLink>
       </div>
-    </>
+    </div>
   );
 };
 

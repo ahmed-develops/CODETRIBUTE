@@ -1,15 +1,46 @@
-.contributor-portal-container {
-    display: flex;
-    justify-content:space-around;
-    max-width: 1200px; 
-    margin:0%;
-  }
-  
-  .grid-box {
-    display:contents;
-    grid-template-columns: repeat(3, 1fr);
-    gap: 40px; 
-  }
-  
-  /* Add your existing styles for it-1, it-3, item-icon, item-header, etc. */
-  
+/* Shaheer's UI for Portals */
+
+.grid-box {
+  display: grid;
+  grid-template-columns: repeat(3, 16.875em); 
+  gap: 10em; 
+}
+
+.item-header {
+  margin-left: 0.8125em; 
+  font-size: 1.125rem; 
+  font-family:'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  font-weight: bold;
+  font-style: italic;
+  color: white;
+  padding: 10px;
+}
+
+.item-icon {
+  margin-top: 3.125em; 
+  margin-left: 6.25em; 
+}
+
+.it-1, .it-2, .it-3, .it-4 {
+  border-radius: 1.25em;
+}
+
+.it-1 {
+  background: linear-gradient(145deg, #203658, #1b2d4a);
+  box-shadow: 0.3125em 0.3125em 0.125em #0d1522, -0.3125em -0.3125em 0.125em #2f4f82;
+}
+
+.it-2 {
+  background: linear-gradient(145deg, #981c48, #80173c);
+  box-shadow: 0.3125em 0.3125em 0.125em #3c0b1c, -0.3125em -0.3125em 0.125em #e0296a;
+}
+
+.it-3 {
+  background: linear-gradient(145deg, #98841c, #806f17);
+  box-shadow: 0.3125em 0.3125em 0.125em #3c340b, -0.3125em -0.3125em 0.125em #e0c229;
+}
+
+.it-4 {
+  background: linear-gradient(145deg, #25593e, #204b34);
+  box-shadow: 0.3125em 0.3125em 0.125em #0f2318, -0.3125em -0.3125em 0.125em #37835c;
+}

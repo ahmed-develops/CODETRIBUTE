@@ -71,14 +71,21 @@ button:focus-visible {
   }
 }
 
+
 /* Shaheer's UI for Portals */
 
 .grid-box {
   display: grid;
   grid-template-columns: repeat(3, 16.875em); 
-  gap: 10em; 
+  gap: 4em; 
+  margin-left: 0px;
+  margin-top: 75px;
+  margin-right: 50px;
 }
-
+.Realgrid{
+  display: flex;
+  flex-direction: row;
+}
 .item-header {
   margin-left: 0.8125em; 
   font-size: 1.125rem; 

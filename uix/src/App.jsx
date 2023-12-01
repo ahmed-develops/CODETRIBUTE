@@ -116,10 +116,10 @@ function App() {
     },
 
     // Misc
-    {
-      path: "/view-my-profile",
-      element: <ViewMyProfile loginCredentials={loginCredentials}/>
-    },
+    // {
+    //   path: "/view-my-profile",
+    //   element: <ViewMyProfile loginCredentials={loginCredentials}/>
+    // },
     {
       path: "/view-activity-logs",
       element: <ViewActivityLogs loginCredentials={loginCredentials}/>
