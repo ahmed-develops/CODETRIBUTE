@@ -4,6 +4,7 @@ import Form from "react-bootstrap/Form";
 import Modal from "react-bootstrap/Modal";
 import Table from "react-bootstrap/Table";
 import "../../assets/ViewProjects.css";
+import { NavLink } from "react-router-dom";
 
 const ViewAllListedProjects = ({ loginCredentials }) => {
   const [show, setShow] = useState(false);
@@ -80,6 +81,11 @@ const ViewAllListedProjects = ({ loginCredentials }) => {
 
   return (
     <>
+            <center>
+        <NavLink to='/contributor-portal' className='btn btn-primary'>
+          Go Back
+        </NavLink>
+        </center>
       {/* Create Contribution Modal */}
       <Modal show={show} onHide={handleClose} animation={true}>
         <Modal.Header closeButton>

@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { Table } from 'react-bootstrap';
 import "../../assets/ViewProjects.css";
+import { NavLink } from "react-router-dom";
 
 const ViewSystemLogs = ({ loginCredentials }) => {
     const [systemLogs, setSystemLogs] = useState([]);
@@ -37,6 +38,11 @@ const ViewSystemLogs = ({ loginCredentials }) => {
 
     return (
         <>
+        <center>
+        <NavLink to='/admin-portal' className='btn btn-primary'>
+          Go Back
+        </NavLink> &nbsp;
+        </center>
         <hr/>
         <b>TRANSACTIONAL LOGS</b>
         <hr/>

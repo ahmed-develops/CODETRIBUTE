@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import "../../assets/ViewProjects.css";
 import Button from "react-bootstrap/esm/Button";
-
+import { NavLink } from "react-router-dom";
 const ViewMyCommits = ({ loginCredentials }) => {
   const [commitData, setCommitData] = useState([]);
   const [projectData, setProjectData] = useState([]);
@@ -88,7 +88,14 @@ const ViewMyCommits = ({ loginCredentials }) => {
   };
 
   return (
+    <>
+    <center>
+    <NavLink to='/contributor-portal' className='btn btn-primary'>
+      Go Back
+    </NavLink>
+    </center>
     <div className="commit-container">
+      
       <table>
         <thead>
           {/* <tr>
@@ -141,6 +148,7 @@ const ViewMyCommits = ({ loginCredentials }) => {
         </tbody>
       </table>
     </div>
+    </>
   );
 };
 

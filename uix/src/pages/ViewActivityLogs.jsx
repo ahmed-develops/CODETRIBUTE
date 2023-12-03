@@ -1,12 +1,13 @@
 import React, { useEffect, useState } from "react";
 import { Table } from 'react-bootstrap';
 import "../assets/ViewProjects.css";
+import { NavLink } from "react-router-dom";
 
 const ViewActivityLogs = ({ loginCredentials }) => {
     const [systemLogs, setSystemLogs] = useState([]);
 
     useEffect(() => {
-        const loadSystemLogs = async () => {
+        const loadActivityLogs = async () => {
             try {
                 if (!loginCredentials || !loginCredentials.user_id) {
                     console.error('Login credentials are missing');
@@ -32,11 +33,18 @@ const ViewActivityLogs = ({ loginCredentials }) => {
             }
         };
 
-        loadSystemLogs();
+        loadActivityLogs();
     }, [loginCredentials]);
 
     return (
         <>
+        <center>
+          <NavLink to={`/${loginCredentials.privilege}-portal`} className="btn btn-primary">
+            Go Back
+          </NavLink>
+        <br/>
+
+        </center>
         <hr/>
         <b>TRANSACTIONAL LOGS</b>
         <hr/>

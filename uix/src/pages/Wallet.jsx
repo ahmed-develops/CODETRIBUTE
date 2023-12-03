@@ -2,6 +2,7 @@ import React, { useEffect, useState } from "react";
 import Web3 from "web3";
 import PropTypes from "prop-types";
 import TokenABI from "./TokenABI.json";
+import { NavLink } from "react-router-dom";
 
 const Wallet = ({ loginCredentials }) => {
   const [walletAddress, setWalletAddress] = useState(null);
@@ -33,9 +34,11 @@ const Wallet = ({ loginCredentials }) => {
         fetchOutgoingTransactionHistory();
 
         setWalletAddress(wallet.accountAddress);
-        const web3 = new Web3('https://eth-sepolia.g.alchemy.com/v2/f_R62a50s5Tn4qsHaz0n0AyoIUkwzXAG');
+        const web3 = new Web3(
+          "https://eth-sepolia.g.alchemy.com/v2/f_R62a50s5Tn4qsHaz0n0AyoIUkwzXAG"
+        );
         const tokenAddress = "0xe2ca36365E40e81A8185bB8986d662501dF5F6f2";
-        const tokenAbi = TokenABI; 
+        const tokenAbi = TokenABI;
         const tokenContract = new web3.eth.Contract(tokenAbi, tokenAddress);
 
         const userAddress = wallet.accountAddress;
@@ -169,21 +172,30 @@ const Wallet = ({ loginCredentials }) => {
 
   return (
     <>
-    {walletAddress ?
-    <>
-      <h1>Wallet Number: {walletAddress}</h1>
-      <h1>Token Balance: {tokenBalance}</h1>
-      <hr />
-      <fieldset>INCOMING TRANSACTIONS</fieldset>
-      <hr />
-      {renderIncomingTransactionTable()}
-      <br/>
-      <hr />
-      <fieldset>OUTGOING TRANSACTIONS</fieldset>
-      <hr />
-      {renderOutgoingTransactionTable()}
-    </>
-    : <h1>User does not have a wallet</h1> }
+      <center>
+          <NavLink to={`/${loginCredentials.privilege}-portal`} className="btn btn-primary">
+            Go Back
+          </NavLink>
+        <br/>
+        <br/>
+        </center>
+      {walletAddress ? (
+        <>
+          <h1>Wallet Number: {walletAddress}</h1>
+          <h1>Token Balance: {tokenBalance}</h1>
+          <hr />
+          <fieldset>INCOMING TRANSACTIONS</fieldset>
+          <hr />
+          {renderIncomingTransactionTable()}
+          <br />
+          <hr />
+          <fieldset>OUTGOING TRANSACTIONS</fieldset>
+          <hr />
+          {renderOutgoingTransactionTable()}
+        </>
+      ) : (
+        <h1>User does not have a wallet</h1>
+      )}
     </>
   );
 };

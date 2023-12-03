@@ -8,7 +8,6 @@ import Modal from "react-bootstrap/Modal";
 import { useState } from "react";
 import Form from "react-bootstrap/Form";
 import Button from "react-bootstrap/Button";
-import ManageUserProfile from "./ManageUserProfile";
 import DistributeTokens from "./DistributeTokens";
 
 const AdminPortal = ({ loginCredentials }) => {
@@ -31,6 +30,7 @@ const AdminPortal = ({ loginCredentials }) => {
   };
 
   if (!loginCredentials) {
+    alert('You must be signed in to continue!');
     window.location = "/";
     return null;
   }

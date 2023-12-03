@@ -5,6 +5,7 @@ import "../../assets/ViewProjects.css";
 import BanModal from "../../components/BanModal";
 import RegistrationModal from "../../components/RegistrationModal";
 import UpdateModal from "../../components/UpdateModal";
+import { NavLink } from "react-router-dom";
 
 const ManageUserProfile = ({ loginCredentials }) => {
   const [contributors, setContributors] = useState([]);
@@ -209,6 +210,12 @@ const ManageUserProfile = ({ loginCredentials }) => {
   return (
     <div>
       <center>
+        {/* <NavLink onClick={ () => {
+        window.location = '/admin-portal';
+        }}>Go back</NavLink> */}
+        <NavLink to='/admin-portal' className='btn btn-primary'>
+          Go Back
+        </NavLink> &nbsp;
         <Button variant="primary" onClick={handleShowRegistrationModal} className="add-user-btn">
           Add A User
         </Button>

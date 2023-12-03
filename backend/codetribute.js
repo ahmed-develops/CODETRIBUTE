@@ -124,7 +124,7 @@ codetribute.get("/authenticate/:user_id/:password/", async (req, res) => {
 
       (err, result, fields) => {
         if (err) {
-          res.status(500).json({ status: 500 });
+          res.status(400).json({ status: 400 });
         } else {
           if (result.length > 0) {
             res.status(200).json({ status: 200, userdata: result[0] });
