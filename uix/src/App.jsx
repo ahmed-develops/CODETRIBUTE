@@ -15,8 +15,8 @@ import ViewAllListedProjects from "./pages/contributor/ViewAllListedProjects";
 import ManageUserProfile from "./pages/admin/ManageUserProfile";
 import Wallet from "./pages/Wallet";
 import ViewSystemLogs from "./pages/admin/ViewSystemLogs";
-import ViewMyProfile from "./pages/ViewMyProfile";
 import ViewActivityLogs from "./pages/ViewActivityLogs";
+import Leaderboard from "./pages/Leaderboard";
 
 function App() {
   const [loginCredentials, setLoginCredentials] = useState(null);
@@ -114,15 +114,13 @@ function App() {
       path: "/contributor/view-my-commits",
       element: <ViewMyCommits loginCredentials={loginCredentials} />,
     },
-
-    // Misc
-    // {
-    //   path: "/view-my-profile",
-    //   element: <ViewMyProfile loginCredentials={loginCredentials}/>
-    // },
     {
       path: "/view-activity-logs",
       element: <ViewActivityLogs loginCredentials={loginCredentials}/>
+    },
+    {
+      path: "/view-leaderboard",
+      element: <Leaderboard loginCredentials={loginCredentials}/>
     }
   ]);
 

@@ -28,6 +28,10 @@ const ContributorPortal = ({ loginCredentials }) => {
           <img src={PayImg} className="item-icon" alt="Wallet Icon" />
           <p className="item-header">VIEW YOUR ACTIVITY</p>
         </NavLink>
+        <NavLink to="/view-leaderboard" className="it-1">
+          <img src={PayImg} className="item-icon" alt="Wallet Icon" />
+          <p className="item-header">VIEW LEADERBOARD</p>
+        </NavLink>
       </div>
     </div>
   );

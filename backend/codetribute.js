@@ -20,7 +20,7 @@ dotenv.config();
 const db = require("./database/connectivity");
 
 // WEB3JS
-const { Web3 } = require("web3");
+const Web3  = require("web3");
 const { log } = require("console");
 const web3 = new Web3(
   "https://eth-sepolia.g.alchemy.com/v2/f_R62a50s5Tn4qsHaz0n0AyoIUkwzXAG"
@@ -573,6 +573,36 @@ codetribute.get("/get/projects/:pid", async (req, res) => {
     res.status(500).json({ status: 500, errorMsg: "Internal Server Error" });
   }
 });
+
+codetribute.get("/get/commit/count/leaderboard/:cid", async (req, res) => {
+  const {cid} = req.params;
+  try {
+    await db.query(
+      `SELECT COUNT(*) as "CommitCount"
+      FROM commitbase C
+      INNER JOIN projectbase P ON C.project_id = P.project_id
+      WHERE contributor_id = ? AND C.commit_status = "Accepted"`,
+      [cid],
+
+      (err, result, fields) => {
+        if (err) {
+          res.status(400).json({ status: 400 });
+        } else {
+          if (result.length > 0) {
+            res.status(200).json(result[0].CommitCount);
+          } else {
+            res
+              .status(400)
+              .json({ status: 400, msg: "No commit found for such project" });
+          }
+        }
+      }
+    );
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ status: 500, errorMsg: "Internal Server Error" });
+  }
+})
 
 codetribute.get("/get/commit/count/:project_id", async (req, res) => {
   const { project_id } = req.params;
