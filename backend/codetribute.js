@@ -20,7 +20,7 @@ dotenv.config();
 const db = require("./database/connectivity");
 
 // WEB3JS
-const { Web3 } = require("web3");
+const  Web3  = require("web3");
 const { log } = require("console");
 const web3 = new Web3(
   "https://eth-sepolia.g.alchemy.com/v2/f_R62a50s5Tn4qsHaz0n0AyoIUkwzXAG"
@@ -732,10 +732,13 @@ try {
     `, [amount, cid] ,
      (err, result, fields) => {
       if (err) {
-
+        res.status(400).json({status:400, errorMsg: err.sqlMessage});
+      }
+      else {
+        res.status(200).json({status:200, msg: 'Balance updated'});
       }
      }
-  )
+  );
     }
     catch(err) {
       console.err(err);

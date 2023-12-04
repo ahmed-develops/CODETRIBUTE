@@ -19,6 +19,7 @@ import ViewActivityLogs from "./pages/ViewActivityLogs";
 import Leaderboard from "./pages/Leaderboard";
 
 function App() {
+  
   const [loginCredentials, setLoginCredentials] = useState(null);
   const [loginState, setLoginState] = useState(false);
 
@@ -125,7 +126,7 @@ function App() {
     {
       path: "/view-leaderboard",
       element: <Leaderboard loginCredentials={loginCredentials}/>
-    }
+    },
   ]);
 
   return (
