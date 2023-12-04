@@ -46,9 +46,13 @@ function App() {
 
   const logout = () => {
     window.location = '/';
-    setLoginCredentials(null);
-    setLoginState(false);
     localStorage.removeItem("loginCredentials");
+
+    setTimeout(() => { 
+      setLoginCredentials(null);
+      setLoginState(false);
+    }, 200);
+
   };
 
   useEffect(() => {
@@ -126,10 +130,9 @@ function App() {
 
   return (
     <>
-      {loginCredentials?.user_id && loginState ? (
+      {loginCredentials && loginState ? (
         <>
           <div className="app-container">
-          
             <Button
               className="logout-button"
               variant="primary"

@@ -20,7 +20,7 @@ dotenv.config();
 const db = require("./database/connectivity");
 
 // WEB3JS
-const Web3  = require("web3");
+const { Web3 } = require("web3");
 const { log } = require("console");
 const web3 = new Web3(
   "https://eth-sepolia.g.alchemy.com/v2/f_R62a50s5Tn4qsHaz0n0AyoIUkwzXAG"
@@ -705,7 +705,7 @@ codetribute.get("/get/allUsersExceptAdmins/", async (req, res) => {
           res.status(400).json({ status: 400, errorMsg: err.sqlMessage });
         } else {
           if (users.length > 0) {
-            res.status(200).json(users);
+            res.status(200).json({status:200, user: users});
           } else {
             res.status(400).json({ status: 400, msg: "No users found" });
           }
@@ -716,6 +716,30 @@ codetribute.get("/get/allUsersExceptAdmins/", async (req, res) => {
     console.error(error);
     res.status(500).json({ status: 500, errorMsg: "Internal Server Error" });
   }
+});
+
+codetribute.post("/send/tokens/:cid/:amount", async (req, res)=> {
+  console.log({cid, amount} = req.params);
+try {
+  db.query(
+    `UPDATE wallet
+    SET balance = balance + ?
+    WHERE cid = ?
+
+    UPDATE wallet
+    SET balance = balance - ?
+    WHERE wallet_address = 0x242c4eA92Dc29F4af6aE499dFe11FC083053EF5e
+    `, [amount, cid] ,
+     (err, result, fields) => {
+      if (err) {
+
+      }
+     }
+  )
+    }
+    catch(err) {
+      console.err(err);
+    }
 });
 
 // DELETE REQUESTS - PUBLISHER

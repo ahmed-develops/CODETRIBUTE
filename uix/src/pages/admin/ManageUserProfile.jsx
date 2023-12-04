@@ -118,7 +118,6 @@ const ManageUserProfile = ({ loginCredentials }) => {
     handleInputChange(event);
   };
 
-  // Registration Modal function to add a user
   const handleAddUser = async () => {
     try {
       const apiUrl = `http://localhost:3300/registration/${loginCredentials.user_id}`;

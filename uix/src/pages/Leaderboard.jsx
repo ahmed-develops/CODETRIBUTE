@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import React, { useEffect, useState } from "react";
 import { NavLink } from "react-router-dom";
 import { Table } from "react-bootstrap";
 
@@ -9,17 +9,11 @@ const Leaderboard = ({ loginCredentials }) => {
   useEffect(() => {
     const fetchAllContributors = async () => {
       try {
-        const response = await fetch('http://localhost:3300/get/contributors', {
-          method: 'GET',
-          headers: {
-            'Content-Type': 'application/json'
-          }
-        });
-
+        const response = await fetch('http://localhost:3300/get/contributors');
         const data = await response.json();
-        setContributors(data); 
+        setContributors(data);
       } catch (error) {
-        console.error(error);
+        console.error("Error fetching contributors:", error);
       }
     };
 
@@ -28,48 +22,59 @@ const Leaderboard = ({ loginCredentials }) => {
 
   const fetchCommitCount = async (contributorId) => {
     try {
-      const response = await fetch(`http://localhost:3300/get/commit/count/leaderboard/${contributorId}`, {
-        method: 'GET',
-        headers: {
-          'Content-Type': 'application/json'
-        }
-      });
-
+      const response = await fetch(`http://localhost:3300/get/commit/count/leaderboard/${contributorId}`);
       const data = await response.json();
-      return data; 
+      return data;
     } catch (error) {
       console.error("Error fetching commit count:", error);
-      return 0; 
+      return 0;
     }
   };
-  
+
   useEffect(() => {
     const fetchCommitCountForLoggedInUser = async () => {
-      const data = await fetchCommitCount(loginCredentials.user_id);
-      setCommitCount(data);
+      try {
+        const data = await fetchCommitCount(loginCredentials.user_id);
+        setCommitCount(data);
+      } catch (error) {
+        console.error("Error fetching commit count for logged-in user:", error);
+      }
     };
 
-    fetchCommitCountForLoggedInUser();
+    if (loginCredentials.user_id) {
+      fetchCommitCountForLoggedInUser();
+    }
   }, [loginCredentials.user_id]);
 
   useEffect(() => {
     const fetchCommitCountsForAllContributors = async () => {
-      const contributorsWithCommitCounts = await Promise.all(
-        contributors.map(async (contributor) => {
-          const commitCount = await fetchCommitCount(contributor.user_id);
-          return { ...contributor, commitCount };
-        })
-      );
+      try {
+        const contributorsWithCommitCounts = await Promise.all(
+          contributors.map(async (contributor) => {
+            try {
+              const commitCount = await fetchCommitCount(contributor.user_id);
+              return { ...contributor, commitCount };
+            } catch (error) {
+              console.error("Error fetching commit count for contributor:", error);
+              return { ...contributor, commitCount: 0 };
+            }
+          })
+        );
 
-      const sortedContributors = contributorsWithCommitCounts.sort(
-        (a, b) => b.commitCount - a.commitCount
-      );
+        const sortedContributors = [...contributorsWithCommitCounts].sort(
+          (a, b) => b.commitCount - a.commitCount
+        );
 
-      setContributors(sortedContributors);
+        setContributors(sortedContributors);
+      } catch (error) {
+        console.error("Error fetching commit counts for all contributors:", error);
+      }
     };
 
-    fetchCommitCountsForAllContributors();
-  }, [contributors]);
+    if (contributors.length > 0) {
+      fetchCommitCountsForAllContributors();
+    }
+  }, [contributors, loginCredentials.user_id]); // Include loginCredentials.user_id in the dependency array if needed
 
   return (
     <>
@@ -83,7 +88,7 @@ const Leaderboard = ({ loginCredentials }) => {
         <hr />
         LEADERBOARD
         <hr />
-        {commitCount !== null ? ( 
+        {commitCount !== null ? (
           <Table striped bordered hover responsive className="custom-table">
             <thead>
               <tr>

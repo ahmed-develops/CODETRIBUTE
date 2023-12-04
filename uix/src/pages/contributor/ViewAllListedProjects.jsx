@@ -48,6 +48,9 @@ const ViewAllListedProjects = ({ loginCredentials }) => {
       if (data.status === 400) {
         alert(`${data.errorMsg}`);
       }
+      else {
+        alert('Commit done!')
+      }
     } catch (err) {
       console.error(err);
     }
