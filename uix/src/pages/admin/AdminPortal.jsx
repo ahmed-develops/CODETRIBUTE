@@ -83,6 +83,25 @@ const AdminPortal = ({ loginCredentials }) => {
     }
   };
 
+  const recordTokenTransfer = async (from, to, amount) => {
+    const recordTokenTransferApi = await fetch(`http://localhost:3300/recordTx/${from}/${to}/${amount}`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json"
+      }
+    });
+
+    const recordApiRes = await recordTokenTransferApi.json();
+
+    if (recordApiRes.status === 200) {
+      alert(`Transaction recorded in our system.\n Receipt:\n Sender Acc #: ${from}\n Receiver Acc #: ${amount}`);
+    }
+    else {
+      
+      alert(`Failed to register token transfer\n Message: ${recordApiRes.errorMsg}`);
+    }
+  }
+
   const sendAmount = async () => {
     let amount = document.querySelector("#amount").value;
     const rid = selectedReceiver;
@@ -119,14 +138,18 @@ const AdminPortal = ({ loginCredentials }) => {
         alert('Insufficient balance to make the transfer.');
         return;
       }
-  
+      
       await codeTokensContract.methods.transfer(recieverWalletId, amount).send({ from: sender });
   
       alert(`Token transfer successful!`);
+
       handleCloseDistributeTokens();
+
+      recordTokenTransfer(loginCredentials.user_id, rid, amount);
+
     } catch (error) {
       console.error('Error during token transfer:', error);
-      alert(`Token transfer unsuccessful: Unlinked wallet means no transaction possible.`);
+      alert(`Token transfer unsuccessful: ${error.message}`);
     }
   };
 

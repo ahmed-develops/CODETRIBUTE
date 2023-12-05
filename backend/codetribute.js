@@ -92,7 +92,7 @@ codetribute.get("/get/wallet/:user_id", async (req, res) => {
               .status(200)
               .json({ status: 200, accountAddress: result[0].wallet_address });
           } else {
-            res.status(400).json({ status: 400 });
+            res.status(400).json({ status: 400 , errorMsg: 'No wallet found for such user'});
           }
         }
       }
@@ -190,32 +190,32 @@ codetribute.post("/unbanUser/:user_id", async (req, res) => {
   }
 });
 
-const transactional_log_commit = (
-  user_id,
-  operation_type,
-  table_name,
-  query
-) => {
-  try {
-    db.beginTransaction();
-    db.query(
-      `INSERT INTO transaction_log (user_id, operation_type, table_name, query) 
-       VALUES (?,?,?,?)
-      `,
-      [user_id, operation_type, table_name, query],
-      (err, result, fields) => {
-        if (err) {
-          db.rollback();
-        } else {
-          db.commit();
-        }
-      }
-    );
-  } catch (error) {
-    console.error(error);
-    db.rollback();
-  }
-};
+// const transactional_log_commit = (
+//   user_id,
+//   operation_type,
+//   table_name,
+//   query
+// ) => {
+//   try {
+//     db.beginTransaction();
+//     db.query(
+//       `INSERT INTO transaction_log (actor_id, operation_type, table_name, query) 
+//        VALUES (?,?,?,?)
+//       `,
+//       [user_id, operation_type, table_name, query],
+//       (err, result, fields) => {
+//         if (err) {
+//           db.rollback();
+//         } else {
+//           db.commit();
+//         }
+//       }
+//     );
+//   } catch (error) {
+//     console.error(error);
+//     db.rollback();
+//   }
+// };
 
 codetribute.get("/view/system/logs/:user_id", async (req, res) => {
   const { user_id } = req.params;
@@ -331,12 +331,6 @@ codetribute.post("/registration/:actor_id", async (req, res) => {
       }
     );
     await db.commit();
-    transactional_log_commit(
-      actor_id,
-      "INSERT",
-      "users",
-      `INSERT INTO users (user_id, name, email, password, phone_number, privilege VALUES (${user_id},${name},${email},${password},${phone_number},${privilege})`
-    );
   } catch (err) {
     console.error(err);
     res.status(500).json({ status: 500, errorMsg: "Internal Server Error" });
@@ -370,12 +364,6 @@ codetribute.post("/update/user/:actor_id/:user_id", async (req, res) => {
       }
     );
     await db.commit();
-    transactional_log_commit(
-      actor_id,
-      "UPDATE",
-      "users",
-      `UPDATE users SET name=${name}, email=${email}, password=${password}, phone_number=${phone_number} WHERE user_id=${user_id}`
-    );
   } catch (err) {
     console.error(err);
     res.status(500).json({ status: 500, errorMsg: "Internal Server Error" });
@@ -774,7 +762,7 @@ codetribute.post("/recordTx/:_from/:_to/:_amount", async (req, res) => {
   const { _from, _to, _amount } = req.params;
 
   const hash = crypto.createHash("sha1");
-  hash.update(`Transaction${_from}${_to}${_amount}`);
+  hash.update(`Transaction${_from}${_to}${_amount}${Date.now()}`);
   const hashedTxId = hash.digest("hex");
   console.log(hashedTxId);
 

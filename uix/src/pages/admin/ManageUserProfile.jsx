@@ -334,7 +334,7 @@ const ManageUserProfile = ({ loginCredentials }) => {
                     <Button
                       variant="info"
                       size="sm"
-                      onClick={() => handleShowUpdateModal(contributor)}
+                      onClick={() => handleShowUpdateModal(publisher)}
                     >
                       Edit
                     </Button>
