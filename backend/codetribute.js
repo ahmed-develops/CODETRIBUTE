@@ -19,13 +19,6 @@ dotenv.config();
 // IMPORT DATABASE CONNECTIVITY SETTINGS
 const db = require("./database/connectivity");
 
-// WEB3JS
-const  Web3  = require("web3");
-const { log } = require("console");
-const web3 = new Web3(
-  "https://eth-sepolia.g.alchemy.com/v2/f_R62a50s5Tn4qsHaz0n0AyoIUkwzXAG"
-);
-
 // BACKEND + DATABASE INITIALISATION
 codetribute.listen(
   process.env.BACKEND_PORT,
@@ -718,62 +711,6 @@ codetribute.get("/get/allUsersExceptAdmins/", async (req, res) => {
   }
 });
 
-codetribute.post("/send/tokens/:cid/:amount", async (req, res)=> {
-  console.log({cid, amount} = req.params);
-try {
-  db.query(
-    `UPDATE wallet
-    SET balance = balance + ?
-    WHERE cid = ?
-
-    UPDATE wallet
-    SET balance = balance - ?
-    WHERE wallet_address = 0x242c4eA92Dc29F4af6aE499dFe11FC083053EF5e
-    `, [amount, cid] ,
-     (err, result, fields) => {
-      if (err) {
-        res.status(400).json({status:400, errorMsg: err.sqlMessage});
-      }
-      else {
-        res.status(200).json({status:200, msg: 'Balance updated'});
-      }
-     }
-  );
-    }
-    catch(err) {
-      console.err(err);
-    }
-});
-
-// DELETE REQUESTS - PUBLISHER
-codetribute.post("/manage/commit/reject/:commit_id", async (req, res) => {
-  const { commit_id } = req.params;
-
-  try {
-    await db.query(
-      `
-      UPDATE commitbase
-      SET commit_status = 'Rejected'
-      WHERE commit_id = ?
-      `,
-      [commit_id],
-
-      (err, result, fields) => {
-        if (err) {
-          res.status(400).json({ status: 400, errorMsg: err.sqlMessage });
-        } else {
-          res
-            .status(200)
-            .json({ status: 200, msg: "Commit status updated as 'Rejected'" });
-        }
-      }
-    );
-  } catch (err) {
-    console.error(err);
-    res.status(500).json({ status: 500, errorMsg: "Internal Server Error" });
-  }
-});
-
 codetribute.post("/manage/commit/accept/:commit_id", async (req, res) => {
   const { commit_id } = req.params;
 
@@ -853,105 +790,6 @@ codetribute.post("/recordTx/:_from/:_to/:_amount", async (req, res) => {
           res.status(400).json({ status: 400, errorMsg: err.sqlMessage });
         } else {
           res.status(200).json({ status: 200, msg: "Transaction recorded" });
-        }
-      }
-    );
-  } catch (error) {
-    console.error(error);
-    res.status(500).json({ status: 500, errorMsg: "Internal Server Error" });
-  }
-});
-
-// codetribute.get("/get/senderId/:id", async (req, res)=> {
-//   const {id } = req.params;
-
-//   try {
-
-//     await db.query(
-//       `
-//       SELECT *
-//       FROM walletbase
-//       WHERE user_id
-//       `
-//   }
-//   catch (err) {
-//     console.error(err);
-//   }
-// })
-
-// Transfer token as soon as possible ***********
-codetribute.post("/transfer/tokens/:from/:to/:amount", async (req, res) => {
-  const { from, to, amount } = req.params;
-  console.log(from, to, amount);
-  let from_address, to_address;
-
-  try {
-    // Get sender info
-    await db.query(
-      `SELECT *
-           FROM walletbase
-           WHERE user_id = ?`,
-      [from],
-      async (err, senderInfo, fields) => {
-        from_address = senderInfo[0].wallet_address;
-        if (from_address) {
-          // Get recipient info
-          await db.query(
-            `SELECT *
-                   FROM walletbase
-                   WHERE user_id = ?`,
-            [to],
-            async (err, receiverInfo, fields) => {
-              to_address = receiverInfo[0].wallet_address;
-              console.log(to_address);
-
-              if (to_address) {
-                // ERC-20 Token Contract Address and ABI
-                const tokenContractAddress =
-                  "0xe2ca36365E40e81A8185bB8986d662501dF5F6f2";
-                const tokenContractAbi = require("./CodetributeToken.json"); // Replace with the actual ABI of your ERC-20 token contract
-
-                const tokenContract = new web3.eth.Contract(
-                  tokenContractAbi,
-                  tokenContractAddress
-                );
-
-                // Approve the transfer
-                const approval = await tokenContract.methods
-                  .approve(to_address, amount)
-                  .send({ from: from_address });
-
-                // Check if the approval was successful
-                if (approval.transactionHash) {
-                  // Perform the actual token transfer
-                  const tokenTransfer = await tokenContract.methods
-                    .transfer(toAddress, amount)
-                    .send({ from: from_address });
-
-                  console.log("Token Transfer Receipt:", tokenTransfer);
-
-                  res.status(200).json({
-                    status: 200,
-                    _amount: amount,
-                    _to: result[0].user_id,
-                  });
-                } else {
-                  res
-                    .status(400)
-                    .json({ status: 400, msg: "Token approval failed" });
-                }
-              } else {
-                res.status(400).json({
-                  status: 400,
-                  msg: "Wallet not found for the recipient user",
-                });
-              }
-            }
-          );
-        } else {
-          res
-            .status(400)
-            .json({ status: 400, msg: "Wallet not found for the sender user" });
         }
       }
     );
