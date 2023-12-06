@@ -94,7 +94,7 @@ const AdminPortal = ({ loginCredentials }) => {
     const recordApiRes = await recordTokenTransferApi.json();
 
     if (recordApiRes.status === 200) {
-      alert(`Transaction recorded in our system.\n Receipt:\n Sender Acc #: ${from}\n Receiver Acc #: ${amount}`);
+      alert(`Transaction recorded in our system.\n Receipt:\n Receiver ID: ${to}\n Amount: ${amount}`);
     }
     else {
       

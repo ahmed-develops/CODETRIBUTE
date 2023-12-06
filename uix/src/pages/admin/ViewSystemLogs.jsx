@@ -63,7 +63,7 @@ const ViewSystemLogs = ({ loginCredentials }) => {
                             <tr key={index}>
                                 <td>{log.log_id}</td>
                                 <td>{log.timestamp}</td>
-                                <td>{log.user_id}</td>
+                                <td>{log.actor_id}</td>
                                 <td>{log.operation_type}</td>
                                 <td>{log.table_name}</td>
                                 <td>{log.query}</td>

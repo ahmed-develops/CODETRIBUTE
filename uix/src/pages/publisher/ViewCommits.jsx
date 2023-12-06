@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import "../../assets/ViewProjects.css";
 import React from "react";
+import { NavLink } from "react-router-dom";
 
 const ViewCommits = ({ loginCredentials }) => {
   const [commitData, setCodeData] = useState([]);
@@ -60,52 +61,41 @@ const ViewCommits = ({ loginCredentials }) => {
   }, [loginCredentials.user_id]);
 
   return (
+    <>
+    <center>
+            <NavLink to='/publisher-portal' className='btn btn-primary'>
+          Go Back
+        </NavLink>
+        </center>
     <div className="commits-container">
-      <table>
-        <thead>
-          <tr>
-            <th>Project ID</th>
-            <th>Commit Details</th>
-            <th>Timestamp</th>
-            <th>Contributor</th>
-          </tr>
-        </thead>
-        <tbody>
-          {commitData.map((project) => (
-            <React.Fragment key={project.project_id}>
+      {commitData.map((project) => (
+        <div key={project.project_id} className="project-table">
+          <hr/>
+          <h4>{project.project_id}</h4>
+          <table>
+            <thead>
               <tr>
-                <td>{project.project_id}</td>
-                <td>
-                  {project.commits.map((commit, i) => (
-                    <React.Fragment key={i}>
-                      <div className="path-cell">{commit.commit_path}</div>
-                      {i !== project.commits.length - 1 && <hr />}
-                    </React.Fragment>
-                  ))}
-                </td>
-                <td>
-                  {project.commits.map((commit, i) => (
-                    <React.Fragment key={i}>
-                      <div>{commit.timestamp}</div>
-                      {i !== project.commits.length - 1 && <hr />}
-                    </React.Fragment>
-                  ))}
-                </td>
-                <td>
-                  {project.commits.map((commit, i) => (
-                    <React.Fragment key={i}>
-                      <div>{commit.contributor_id}</div>
-                      {i !== project.commits.length - 1 && <hr />}
-                    </React.Fragment>
-                  ))}
-                </td>
+                <th>Commit Details</th>
+                <th>Timestamp</th>
+                <th>Contributor</th>
               </tr>
-            </React.Fragment>
-          ))}
-        </tbody>
-      </table>
+            </thead>
+            <tbody>
+              {project.commits.map((commit, i) => (
+                <tr key={i}>
+                  <td className="path-cell">{commit.commit_path}</td>
+                  <td>{commit.timestamp}</td>
+                  <td>{commit.contributor_id}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      ))}
     </div>
+    </>
   );
+  
 };
 
 export default ViewCommits;
