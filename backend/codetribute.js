@@ -338,6 +338,30 @@ codetribute.post("/registration/:actor_id", async (req, res) => {
   }
 });
 
+codetribute.post("/update/project/:project_id/:name/:description/:code_path", async (req,res) => {
+  const { project_id, name, description, code_path } = req.params;
+
+try {
+    await db.query(`
+      UPDATE projectbase
+      SET project_name = ?, project_description = ?, code_path = ?
+      WHERE project_id = ?
+    `, [name, description, code_path, project_id],
+      (err, result, fields) => {
+        if (err) {
+          res.status(400).json({status:400, errorMsg: err.sqlMessage});
+        }
+        else {
+          res.status(200).json({status:200, msg: 'Project removed from listing'});
+        }
+      }
+     )
+} catch (error) {
+  console.error(error);
+  res.status(500).json({status:500, errorMsg: `Internal server error: ${error.message}`})
+}
+});
+
 codetribute.delete("/delete/project/:project_id", async (req,res) => {
   const { project_id } = req.params;
 

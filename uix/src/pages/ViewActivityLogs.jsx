@@ -23,9 +23,7 @@ const ViewActivityLogs = ({ loginCredentials }) => {
 
                 const logsApiRes = await systemLogsApi.json();
 
-                if (logsApiRes.status === 400 || logsApiRes.status === 500) {
-                    alert(`API Responded:\n ${logsApiRes.msg}`);
-                } else {
+                if (logsApiRes.status === 200) {
                     setSystemLogs(Array.isArray(logsApiRes) ? logsApiRes : [logsApiRes]);
                 }
             } catch (error) {
