@@ -119,8 +119,14 @@ const ManageUserProfile = ({ loginCredentials }) => {
   };
 
   const handleAddUser = async () => {
+
+    if (!formData.user_id || !formData.name || !formData.email || !formData.password) {
+      alert('Please fill all the fields');
+      return;
+    }
+
     try {
-      const apiUrl = `http://localhost:3300/registration/${loginCredentials.user_id}`;
+      const apiUrl = `http://localhost:3300/registration/${formData.user_id}/${formData.name}/${formData.email}/${formData.password}/${formData.phone_number}`;
       const method = "POST";
 
       const res = await fetch(apiUrl, {
@@ -128,13 +134,11 @@ const ManageUserProfile = ({ loginCredentials }) => {
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify(formData),
       });
 
       const data = await res.json();
 
       if (data.status === 400) {
-        handleClose();
         alert(`${data.errorMsg}`);
       } else {
         alert(`${data.msg}`);
@@ -147,15 +151,14 @@ const ManageUserProfile = ({ loginCredentials }) => {
           phone_number: "",
           privilege: "",
         });
+        handleClose();
+        window.location.reload();
       }
     } catch (err) {
       console.error(err);
     }
-    handleCloseModal();
-    window.location.reload();
   };
 
-  // Update Modal function to update a user
   const handleUpdateUser = async () => {
     try {
       if (!loginCredentials || !loginCredentials.user_id) {
@@ -168,7 +171,7 @@ const ManageUserProfile = ({ loginCredentials }) => {
         return;
       }
   
-      const apiUrl = `http://localhost:3300/update/user/${loginCredentials.user_id}/${formData.user_id}`;
+      const apiUrl = `http://localhost:3300/update/user/${formData.user_id}`;
       const method = "POST";
   
       const res = await fetch(apiUrl, {
@@ -187,7 +190,6 @@ const ManageUserProfile = ({ loginCredentials }) => {
       } else {
         alert(`${data.msg}`);
         handleClose();
-        // Clear the form data
         setFormData({
           user_id: "",
           name: "",
@@ -196,7 +198,6 @@ const ManageUserProfile = ({ loginCredentials }) => {
           phone_number: "",
           privilege: "",
         });
-        // Reset the update state
         setIsUpdate(false);
       }
     } catch (err) {
@@ -209,9 +210,6 @@ const ManageUserProfile = ({ loginCredentials }) => {
   return (
     <div>
       <center>
-        {/* <NavLink onClick={ () => {
-        window.location = '/admin-portal';
-        }}>Go back</NavLink> */}
         <NavLink to='/admin-portal' className='btn btn-primary'>
           Go Back
         </NavLink> &nbsp;

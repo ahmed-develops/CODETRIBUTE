@@ -37,32 +37,24 @@ function App() {
     setLoginCredentials(credentials);
     
     if (userdata.status == "Active") {
-      setLoginState(true);
       localStorage.setItem("loginCredentials", JSON.stringify(credentials));
     }
-    else {
-      setLoginState(false);
-    }
-  };
-
-  const logout = () => {
-    window.location = '/';
-    localStorage.removeItem("loginCredentials");
-
-    setTimeout(() => { 
-      setLoginCredentials(null);
-      setLoginState(false);
-    }, 200);
-
   };
 
   useEffect(() => {
-    const storedLoginCredentials = localStorage.getItem("loginCredentials");
-    if (storedLoginCredentials) {
-      const parsedCredentials = JSON.parse(storedLoginCredentials);
-      setLoginCredentials(parsedCredentials);
-    }
-  }, [loginState]);
+    const getStoredLoginCreds = async () => {
+      const storedLoginCredentials = localStorage.getItem("loginCredentials");
+      if (storedLoginCredentials) {
+        const parsedCredentials = JSON.parse(storedLoginCredentials);
+        if (parsedCredentials) {
+        await setLoginCredentials(parsedCredentials);
+        }
+      }
+    };
+  
+    getStoredLoginCreds();
+  }, []);
+  
 
   const router = createBrowserRouter([
     {
@@ -131,24 +123,7 @@ function App() {
 
   return (
     <>
-      {loginCredentials && loginState ? (
-        <>
-          <div className="app-container">
-            <Button
-              className="logout-button"
-              variant="primary"
-              onClick={logout}
-            >
-              Logout
-            </Button>
-          </div>
-          <RouterProvider router={router} />
-        </>
-      ) : (
-        <>
-          <RouterProvider router={router} />
-        </>
-      )}
+        <RouterProvider router={router} />
     </>
   );
 }

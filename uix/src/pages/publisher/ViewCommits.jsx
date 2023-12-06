@@ -23,7 +23,6 @@ const ViewCommits = ({ loginCredentials }) => {
         console.table(data);
 
         if (Array.isArray(data)) {
-          // Merge commit details for the same occurring project IDs
           const mergedCommitData = data.reduce((merged, commit) => {
             const existingProject = merged.find(
               (item) => item.project_id === commit.project_id
@@ -58,43 +57,50 @@ const ViewCommits = ({ loginCredentials }) => {
       }
     };
     loadCommits();
-  }, [loginCredentials.user_id]);
+  }, [loginCredentials?.user_id]);
 
   return (
     <>
-    <center>
-            <NavLink to='/publisher-portal' className='btn btn-primary'>
+      <center>
+        <NavLink to='/publisher-portal' className='btn btn-primary'>
           Go Back
         </NavLink>
-        </center>
-    <div className="commits-container">
-      {commitData.map((project) => (
-        <div key={project.project_id} className="project-table">
-          <hr/>
-          <h4>{project.project_id}</h4>
-          <table>
-            <thead>
-              <tr>
-                <th>Commit Details</th>
-                <th>Timestamp</th>
-                <th>Contributor</th>
-              </tr>
-            </thead>
-            <tbody>
-              {project.commits.map((commit, i) => (
-                <tr key={i}>
-                  <td className="path-cell">{commit.commit_path}</td>
-                  <td>{commit.timestamp}</td>
-                  <td>{commit.contributor_id}</td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-      ))}
-    </div>
+      </center>
+      <div className="commits-container">
+        {commitData.length > 0 ? (
+          commitData.map((project) => (
+            <div key={project.project_id} className="project-table">
+              <hr/>
+              <h4>{project.project_id}</h4>
+              <table>
+                <thead>
+                  <tr>
+                    <th>Commit Details</th>
+                    <th>Timestamp</th>
+                    <th>Contributor</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {project.commits.map((commit, i) => (
+                    <tr key={i}>
+                      <td className="path-cell">{commit.commit_path}</td>
+                      <td>{commit.timestamp}</td>
+                      <td>{commit.contributor_id}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          ))
+        ) : (
+          <div>
+            <p>No commits to view.</p>
+          </div>
+        )}
+      </div>
     </>
   );
+  
   
 };
 

@@ -34,17 +34,17 @@ const Leaderboard = ({ loginCredentials }) => {
   useEffect(() => {
     const fetchCommitCountForLoggedInUser = async () => {
       try {
-        const data = await fetchCommitCount(loginCredentials.user_id);
-        setCommitCount(data);
+        if (loginCredentials?.user_id) { 
+          const data = await fetchCommitCount(loginCredentials.user_id);
+          setCommitCount(data);
+        }
       } catch (error) {
         console.error("Error fetching commit count for logged-in user:", error);
       }
     };
-
-    if (loginCredentials.user_id) {
-      fetchCommitCountForLoggedInUser();
-    }
-  }, [loginCredentials.user_id]);
+  
+    fetchCommitCountForLoggedInUser();
+  }, [loginCredentials?.user_id]);
 
   useEffect(() => {
     const fetchCommitCountsForAllContributors = async () => {
@@ -74,12 +74,12 @@ const Leaderboard = ({ loginCredentials }) => {
     if (contributors.length > 0) {
       fetchCommitCountsForAllContributors();
     }
-  }, [contributors, loginCredentials.user_id]); // Include loginCredentials.user_id in the dependency array if needed
+  }, [contributors, loginCredentials?.user_id]);
 
   return (
     <>
       <center>
-        <NavLink to={`/${loginCredentials.privilege}-portal`} className="btn btn-primary">
+        <NavLink to={`/${loginCredentials?.privilege}-portal`} className="btn btn-primary">
           Go Back
         </NavLink>
         <br />

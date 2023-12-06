@@ -22,7 +22,7 @@ const LandingPage = ({ setLogin }) => {
     const phone_number = document.querySelector("#r_phoneNumber").value;
 
     try {
-      if (!user_id || !name || !email || !password || !privilege) {
+      if (!user_id || !name || !email || !password) {
         alert("Please fill all the fields!");
         return;
       }
@@ -45,7 +45,7 @@ const LandingPage = ({ setLogin }) => {
         handleClose();
       } else {
         alert(
-          "Similar credentials already exist in our database, hence choose new credentials and try again."
+          `${data.errorMsg}`
         );
       }
     } catch (err) {

@@ -36,11 +36,16 @@ const ViewProjects = ({ loginCredentials }) => {
 
         const data = await res.json();
         console.table(data);
+        if (data.status !== 400) {
         if (Array.isArray(data)) {
           setCodeData(data);
         } else {
           setCodeData([data]);
         }
+      }
+      else {
+        return;
+      }
 
         data.forEach(async (val) => {
           const commitCountResponse = await fetch(
@@ -66,7 +71,7 @@ const ViewProjects = ({ loginCredentials }) => {
       }
     };
     loadProjects();
-  }, []);
+  }, [loginCredentials]);
 
   const handleShowUpdateModal = (selectedProject) => {
     setSelectedProject(selectedProject);
@@ -79,88 +84,96 @@ const ViewProjects = ({ loginCredentials }) => {
   };
 
   return (
-    <><center>            <NavLink to='/publisher-portal' className='btn btn-primary'>
-      Go Back
-  </NavLink></center>
-  <hr/>
-    <div className="projects-container">
-      <table>
-        <thead>
-          <tr>
-            <th>ID</th>
-            <th>Project Name</th>
-            <th>Project Description</th>
-            <th>Code Path</th>
-            <th>Accepted Commit Count</th>
-            <th>Action</th>
-          </tr>
-        </thead>
-        <tbody>
-          {codeData.map((val, i) => (
-            <tr key={i}>
-              <td>{val.project_id}</td>
-              <td>{val.project_name}</td>
-              <td className="path-cell">{val.project_description}</td>
-              <td className="path-cell">{val.code_path}</td>
-
-              <td>{getCommitCountForProject(val.project_id) ?? "0"}</td>
-
-              <td>
-                <Button
-                  variant="info"
-                  size="sm"
-                  onClick={() => handleShowUpdateModal(val)}
-                >
-                  Edit
-                </Button>
-                &nbsp;
-                <Button
-                  variant="info"
-                  size="sm"
-                  onClick={async () => {
-                    try {
-                      const deleteProjectApi = await fetch(
-                        `http://localhost:3300/delete/project/${val.project_id}`,
-                        {
-                          method: "DELETE",
-                          headers: {
-                            "Content-type": "application/json",
-                          },
+    <>
+      <center>
+        <NavLink to='/publisher-portal' className='btn btn-primary'>
+          Go Back
+        </NavLink>
+      </center>
+      <hr/>
+      <div className="projects-container">
+        {codeData && codeData.length > 0 ? (
+          <table>
+            <thead>
+              <tr>
+                <th>ID</th>
+                <th>Project Name</th>
+                <th>Project Description</th>
+                <th>Code Path</th>
+                <th>Accepted Commit Count</th>
+                <th>Action</th>
+              </tr>
+            </thead>
+            <tbody>
+              {codeData.map((val, i) => (
+                <tr key={i}>
+                  <td>{val.project_id}</td>
+                  <td>{val.project_name}</td>
+                  <td className="path-cell">{val.project_description}</td>
+                  <td className="path-cell">{val.code_path}</td>
+  
+                  <td>{getCommitCountForProject(val.project_id) ?? "0"}</td>
+  
+                  <td>
+                    <Button
+                      variant="info"
+                      size="sm"
+                      onClick={() => handleShowUpdateModal(val)}
+                    >
+                      Edit
+                    </Button>
+                    &nbsp;
+                    <Button
+                      variant="info"
+                      size="sm"
+                      onClick={async () => {
+                        try {
+                          const deleteProjectApi = await fetch(
+                            `http://localhost:3300/delete/project/${val.project_id}`,
+                            {
+                              method: "DELETE",
+                              headers: {
+                                "Content-type": "application/json",
+                              },
+                            }
+                          );
+  
+                          const apiRes = await deleteProjectApi.json();
+  
+                          if (apiRes.status === 200) {
+                            alert("Project removed from listing.");
+                            window.location.reload();
+                          } else {
+                            alert(
+                              `Could not delete project:\n Reason : ${apiRes.errorMsg}`
+                            );
+                          }
+                        } catch (err) {
+                          alert(err.message);
+                          console.error(err);
                         }
-                      );
-
-                      const apiRes = await deleteProjectApi.json();
-
-                      if (apiRes.status === 200) {
-                        alert("Project removed from listing.");
-                        window.location.reload();
-                      } else {
-                        alert(
-                          `Could not delete project:\n Reason : ${apiRes.errorMsg}`
-                        );
-                      }
-                    } catch (err) {
-                      alert(err.message);
-                      console.error(err);
-                    }
-                  }}
-                >
-                  Delete
-                </Button>
-              </td>
-            </tr>
-          ))}
-        </tbody>
-      </table>
-
-      <UpdateProjectModal
-        show={showUpdateModal}
-        handleClose={handleCloseUpdateModal}
-        selectedProject={selectedProject}
-      />
-    </div>
+                      }}
+                    >
+                      Delete
+                    </Button>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        ) : (
+          <p>No projects published yet.</p>
+        )}
+  
+        <UpdateProjectModal
+          show={showUpdateModal}
+          handleClose={handleCloseUpdateModal}
+          selectedProject={selectedProject}
+        />
+      </div>
     </>
   );
+  
 };
 
 export default ViewProjects;

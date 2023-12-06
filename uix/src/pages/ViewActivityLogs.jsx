@@ -24,7 +24,7 @@ const ViewActivityLogs = ({ loginCredentials }) => {
                 const logsApiRes = await systemLogsApi.json();
 
                 if (logsApiRes.status === 200) {
-                    setSystemLogs(Array.isArray(logsApiRes) ? logsApiRes : [logsApiRes]);
+                    setSystemLogs(logsApiRes.logs);
                 }
             } catch (error) {
                 console.error('Error fetching system logs:', error);
@@ -34,10 +34,11 @@ const ViewActivityLogs = ({ loginCredentials }) => {
         loadActivityLogs();
     }, [loginCredentials]);
 
+    console.log(systemLogs);
     return (
         <>
         <center>
-          <NavLink to={`/${loginCredentials.privilege}-portal`} className="btn btn-primary">
+          <NavLink to={`/${loginCredentials?.privilege}-portal`} className="btn btn-primary">
             Go Back
           </NavLink>
         <br/>
@@ -63,7 +64,7 @@ const ViewActivityLogs = ({ loginCredentials }) => {
                             <tr key={index}>
                                 <td>{log.log_id}</td>
                                 <td>{log.timestamp}</td>
-                                <td>{log.user_id}</td>
+                                <td>{log.actor_id}</td>
                                 <td>{log.operation_type}</td>
                                 <td>{log.table_name}</td>
                                 <td>{log.query}</td>
@@ -72,7 +73,7 @@ const ViewActivityLogs = ({ loginCredentials }) => {
                     </tbody>
                 </Table>
             ) : (
-                <p>No system logs available</p>
+                <p>No activity logs available</p>
             )}
         </>
     );

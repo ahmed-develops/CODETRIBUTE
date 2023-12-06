@@ -1,6 +1,11 @@
 import React, { useEffect } from 'react';
+import Button from "react-bootstrap/esm/Button";
 
 const ViewMyProfile = ({userdata}) => {
+  if (!userdata) {
+    return null;
+  }
+  
   console.table(userdata);
   const profileData = {
     name: userdata.name,
@@ -24,6 +29,16 @@ const ViewMyProfile = ({userdata}) => {
         <p style={styles.phone_number}>+{profileData.phone_number}</p>
         <p style={styles.privilege}>{profileData.privilege}</p>
         <p style={styles.status}>{profileData.status}</p>
+        <hr/>
+        <Button onClick={() => {
+          window.location = '/';
+          localStorage.removeItem("loginCredentials");
+      
+          setTimeout(() => { 
+            setLoginCredentials(null);
+            setLoginState(false);
+          }, 200);
+        }}>Logout</Button>
       </div>
     </div>
   );

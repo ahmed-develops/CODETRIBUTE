@@ -9,7 +9,7 @@ const crypto = require("crypto");
 codetribute.use(express.json());
 
 // CROSS-ORIGIN RESOURCE SHARING
-const cors = require("cors");
+const cors = require("cors"); // 5173, 3300
 codetribute.use(cors());
 
 // DOTENV FOR ABSTRACTING CREDENTIALS
@@ -21,7 +21,7 @@ const db = require("./database/connectivity");
 
 // BACKEND + DATABASE INITIALISATION
 codetribute.listen(
-  process.env.BACKEND_PORT,
+  3300,
   (__init__ = () => {
     console.log("[server] Server initiated");
 
@@ -34,9 +34,6 @@ codetribute.listen(
         }
       } catch (err) {
         console.error(err);
-        res
-          .status(500)
-          .json({ status: 500, errorMsg: "Internal Server Error" });
       }
     });
   })
@@ -92,7 +89,9 @@ codetribute.get("/get/wallet/:user_id", async (req, res) => {
               .status(200)
               .json({ status: 200, accountAddress: result[0].wallet_address });
           } else {
-            res.status(400).json({ status: 400 , errorMsg: 'No wallet found for such user'});
+            res
+              .status(400)
+              .json({ status: 400, errorMsg: "No wallet found for such user" });
           }
         }
       }
@@ -108,7 +107,7 @@ codetribute.get("/authenticate/:user_id/:password/", async (req, res) => {
 
   try {
     await db.query(
-      `
+            `
                 SELECT *
                 FROM users
                 WHERE user_id = ? AND password = ?
@@ -117,7 +116,7 @@ codetribute.get("/authenticate/:user_id/:password/", async (req, res) => {
 
       (err, result, fields) => {
         if (err) {
-          res.status(400).json({ status: 400 });
+          res.status(400).json({ status: 400, errorMsg: err.sqlMessage });
         } else {
           if (result.length > 0) {
             res.status(200).json({ status: 200, userdata: result[0] });
@@ -190,33 +189,6 @@ codetribute.post("/unbanUser/:user_id", async (req, res) => {
   }
 });
 
-// const transactional_log_commit = (
-//   user_id,
-//   operation_type,
-//   table_name,
-//   query
-// ) => {
-//   try {
-//     db.beginTransaction();
-//     db.query(
-//       `INSERT INTO transaction_log (actor_id, operation_type, table_name, query) 
-//        VALUES (?,?,?,?)
-//       `,
-//       [user_id, operation_type, table_name, query],
-//       (err, result, fields) => {
-//         if (err) {
-//           db.rollback();
-//         } else {
-//           db.commit();
-//         }
-//       }
-//     );
-//   } catch (error) {
-//     console.error(error);
-//     db.rollback();
-//   }
-// };
-
 codetribute.get("/view/system/logs/:user_id", async (req, res) => {
   const { user_id } = req.params;
 
@@ -262,25 +234,20 @@ codetribute.get("/view/activity/logs/:user_id", async (req, res) => {
   const { user_id } = req.params;
 
   try {
-    db.beginTransaction();
     await db.query(
       `
         SELECT * 
         FROM transaction_log
-        WHERE user_id = ?
+        WHERE actor_id = ?
         `,
       [user_id],
       async (err, result, fields) => {
         if (err) {
-          await db.rollback();
           res.status(400).json({ status: 400, errorMsg: err.sqlMessage });
-          return;
         } else {
           if (result.length > 0) {
-            db.commit();
-            res.status(200).json(result);
+            res.status(200).json({status:200, logs:result});
           } else {
-            db.commit();
             res
               .status(400)
               .json({ status: 200, msg: "No transactional logs found." });
@@ -289,7 +256,6 @@ codetribute.get("/view/activity/logs/:user_id", async (req, res) => {
       }
     );
   } catch (error) {
-    db.rollback();
     res
       .status(500)
       .json({ status: 500, errorMsg: `Internal Server Error:\n${error}` });
@@ -298,96 +264,115 @@ codetribute.get("/view/activity/logs/:user_id", async (req, res) => {
 });
 
 // Registration API (req.body)
-codetribute.post("/registration/:actor_id", async (req, res) => {
-  const { actor_id } = req.params;
-  const { user_id, name, email, password, phone_number } = req.body;
+// codetribute.post("/registration/", async (req, res) => {
+//   const { actor_id } = req.params;
+//   const { user_id, name, email, password, phone_number } = req.body;
 
-  let privilege;
+//   let privilege;
 
-  if (user_id[0] == "C") {
-    privilege = "Contributor";
-  } else if (user_id[0] == "P") {
-    privilege = "Publisher";
+//   if (user_id[0] == "C") {
+//     privilege = "Contributor";
+//   } else if (user_id[0] == "P") {
+//     privilege = "Publisher";
+//   }
+
+//   try {
+//     await db.beginTransaction();
+//     await db.query(
+//       `
+//             INSERT INTO users (user_id, name, email, password, phone_number, privilege)
+//             VALUES (?,?,?,?,?,?)
+//           `,
+//       [user_id, name, email, password, phone_number, privilege],
+
+//       async (err, result, fields) => {
+//         if (err) {
+//           await db.rollback();
+//           res.status(400).json({ status: 400, errorMsg: err.sqlMessage });
+//         } else {
+//           res
+//             .status(200)
+//             .json({ status: 200, msg: "User registered successfully." });
+//         }
+//       }
+//     );
+//     await db.commit();
+//   } catch (err) {
+//     console.error(err);
+//     res.status(500).json({ status: 500, errorMsg: "Internal Server Error" });
+//     await db.rollback();
+//   }
+// });
+
+codetribute.post(
+  "/update/project/:project_id/:name/:description/:code_path",
+  async (req, res) => {
+    const { project_id, name, description, code_path } = req.params;
+
+    try {
+      await db.query(
+        `
+      UPDATE projectbase
+      SET project_name = ?, project_description = ?, code_path = ?
+      WHERE project_id = ?
+    `,
+        [name, description, code_path, project_id],
+        (err, result, fields) => {
+          if (err) {
+            res.status(400).json({ status: 400, errorMsg: err.sqlMessage });
+          } else {
+            res
+              .status(200)
+              .json({ status: 200, msg: "Project removed from listing" });
+          }
+        }
+      );
+    } catch (error) {
+      console.error(error);
+      res
+        .status(500)
+        .json({
+          status: 500,
+          errorMsg: `Internal server error: ${error.message}`,
+        });
+    }
   }
+);
+
+codetribute.delete("/delete/project/:project_id", async (req, res) => {
+  const { project_id } = req.params;
 
   try {
-    await db.beginTransaction();
     await db.query(
       `
-            INSERT INTO users (user_id, name, email, password, phone_number, privilege)
-            VALUES (?,?,?,?,?,?)
-          `,
-      [user_id, name, email, password, phone_number, privilege],
-
-      async (err, result, fields) => {
+      DELETE
+      FROM projectbase
+      WHERE project_id = ?
+    `,
+      [project_id],
+      (err, result, fields) => {
         if (err) {
-          await db.rollback();
           res.status(400).json({ status: 400, errorMsg: err.sqlMessage });
         } else {
           res
             .status(200)
-            .json({ status: 200, msg: "User registered successfully." });
+            .json({ status: 200, msg: "Project removed from listing" });
         }
       }
     );
-    await db.commit();
-  } catch (err) {
-    console.error(err);
-    res.status(500).json({ status: 500, errorMsg: "Internal Server Error" });
-    await db.rollback();
+  } catch (error) {
+    console.error(error);
+    res
+      .status(500)
+      .json({
+        status: 500,
+        errorMsg: `Internal server error: ${error.message}`,
+      });
   }
 });
 
-codetribute.post("/update/project/:project_id/:name/:description/:code_path", async (req,res) => {
-  const { project_id, name, description, code_path } = req.params;
-
-try {
-    await db.query(`
-      UPDATE projectbase
-      SET project_name = ?, project_description = ?, code_path = ?
-      WHERE project_id = ?
-    `, [name, description, code_path, project_id],
-      (err, result, fields) => {
-        if (err) {
-          res.status(400).json({status:400, errorMsg: err.sqlMessage});
-        }
-        else {
-          res.status(200).json({status:200, msg: 'Project removed from listing'});
-        }
-      }
-     )
-} catch (error) {
-  console.error(error);
-  res.status(500).json({status:500, errorMsg: `Internal server error: ${error.message}`})
-}
-});
-
-codetribute.delete("/delete/project/:project_id", async (req,res) => {
-  const { project_id } = req.params;
-
-try {
-    await db.query(`
-      DELETE
-      FROM projectbase
-      WHERE project_id = ?
-    `, [project_id],
-      (err, result, fields) => {
-        if (err) {
-          res.status(400).json({status:400, errorMsg: err.sqlMessage});
-        }
-        else {
-          res.status(200).json({status:200, msg: 'Project removed from listing'});
-        }
-      }
-     )
-} catch (error) {
-  console.error(error);
-  res.status(500).json({status:500, errorMsg: `Internal server error: ${error.message}`})
-}
-});
-
-codetribute.post("/update/user/:actor_id/:user_id", async (req, res) => {
-  const { actor_id, user_id } = req.params;
+codetribute.post("/update/user/:user_id", async (req, res) => {
+  const { user_id } = req.params;
   const { name, email, password, phone_number } = req.body;
 
   try {
@@ -421,18 +406,57 @@ codetribute.post("/update/user/:actor_id/:user_id", async (req, res) => {
 
 // Registration API
 codetribute.post(
-  "/registration/:user_id/:name/:email/:password/:phone_number/:privilege",
+  "/registration/:user_id/:name/:email/:password/:phone_number/",
   async (req, res) => {
-    const { user_id, name, email, password, phone_number, privilege } =
-      req.params;
-
     try {
+      const { user_id, name, email, password, phone_number } = req.params;
+
+      let privilege;
+      console.log(user_id[0]);
+
+      if (phone_number.length > 12 || phone_number.length < 12) {
+        res
+        .status(400)
+        .json({
+          status: 400,
+          errorMsg:
+            "Enter a valid phone number with length at max 12",
+        });
+        return;
+      }
+
+      if (password.length > 16) {
+        res
+        .status(400)
+        .json({
+          status: 400,
+          errorMsg:
+            "Enter a valid password with length at max 16",
+        });
+        return;
+      }
+
+      if (user_id[0] == "C" || user_id[0] == "c") {
+        privilege = "Contributor";
+      } else if (user_id[0] == "P" || user_id[0] == "p") {
+        privilege = "Publisher";
+      } else {
+        res
+          .status(400)
+          .json({
+            status: 400,
+            errorMsg:
+              "Enter a valid user ID starting from C or P where C = contributor and P = publisher",
+          });
+          return;
+      }
+
       await db.query(
         `
             INSERT INTO users (user_id, name, email, password, phone_number, privilege)
             VALUES (?,?,?,?,?,?)
           `,
-        [user_id, name, email, password, phone_number, privilege],
+        [user_id.toUpperCase(), name, email, password, phone_number, privilege],
 
         (err, result, fields) => {
           if (err) {
@@ -446,7 +470,7 @@ codetribute.post(
       );
     } catch (err) {
       console.error(err);
-      res.status(500).json({ status: 500, errorMsg: "Internal Server Error" });
+      res.status(500).json({ status: 500, errorMsg: `Internal Server Error: ${err.message}` });
     }
   }
 );
@@ -498,12 +522,6 @@ codetribute.post("/post/commit/contributor", async (req, res) => {
           res.status(400).json({ status: 400, errorMsg: err.sqlMessage });
         } else {
           db.commit();
-          transactional_log_commit(
-            contributor_id,
-            "INSERT",
-            "commitbase",
-            `INSERT INTO commitbase (commit_id, contributor_id, commit_path, project_id) VALUES (${commit_id},${contributor_id},${commit_path},${project_id})`
-          );
           res.status(200).json({ status: 200, msg: "Commit successful" });
         }
       }
@@ -604,7 +622,7 @@ codetribute.get("/get/projects/:pid", async (req, res) => {
 });
 
 codetribute.get("/get/commit/count/leaderboard/:cid", async (req, res) => {
-  const {cid} = req.params;
+  const { cid } = req.params;
   try {
     await db.query(
       `SELECT COUNT(*) as "CommitCount"
@@ -631,7 +649,7 @@ codetribute.get("/get/commit/count/leaderboard/:cid", async (req, res) => {
     console.error(err);
     res.status(500).json({ status: 500, errorMsg: "Internal Server Error" });
   }
-})
+});
 
 codetribute.get("/get/commit/count/:project_id", async (req, res) => {
   const { project_id } = req.params;
@@ -734,7 +752,7 @@ codetribute.get("/get/allUsersExceptAdmins/", async (req, res) => {
           res.status(400).json({ status: 400, errorMsg: err.sqlMessage });
         } else {
           if (users.length > 0) {
-            res.status(200).json({status:200, user: users});
+            res.status(200).json({ status: 200, user: users });
           } else {
             res.status(400).json({ status: 400, msg: "No users found" });
           }

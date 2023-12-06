@@ -11,8 +11,10 @@ const Wallet = ({ loginCredentials }) => {
   const [tokenBalance, setTokenBalance] = useState(null);
 
   useEffect(() => {
-    loadWallet();
-  }, []);
+    if (loginCredentials) {
+      loadWallet();
+    }
+  }, [loginCredentials]);
 
   const loadWallet = async () => {
     try {
@@ -173,12 +175,12 @@ const Wallet = ({ loginCredentials }) => {
   return (
     <>
       <center>
-          <NavLink to={`/${loginCredentials.privilege}-portal`} className="btn btn-primary">
-            Go Back
-          </NavLink>
-        <br/>
-        <br/>
-        </center>
+        <NavLink to={`/${loginCredentials?.privilege}-portal`} className="btn btn-primary">
+          Go Back
+        </NavLink>
+        <br />
+        <br />
+      </center>
       {walletAddress ? (
         <>
           <h1>Wallet Number: {walletAddress}</h1>

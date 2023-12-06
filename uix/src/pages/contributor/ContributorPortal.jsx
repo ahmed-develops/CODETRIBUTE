@@ -7,9 +7,11 @@ import PayImg from '../../assets/images/pay.png';
 import '../../assets/ContributorPortal.css';
 
 const ContributorPortal = ({ loginCredentials }) => {
+  const userName = loginCredentials ? loginCredentials.name : '';
+
   return (
     <div className="Realgrid">
-      <ViewMyProfile userdata={loginCredentials}/>
+      <ViewMyProfile userdata={loginCredentials} />
 
       <div className="grid-box">
         <NavLink to="/contributor/view-all-listed-projects" className="it-1">
