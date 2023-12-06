@@ -8,13 +8,9 @@ import Navbar from "../components/Navbar";
 const LandingPage = ({ setLogin }) => {
   const navigateTo = useNavigate();
   const [show, setShow] = useState(false);
-  const [selectedPrivilege, setSelectedPrivilege] = useState("");
   const handleClose = () => setShow(false);
   const handleShow = () => setShow(true);
   const [loginInfo, setLoginInfo] = useState(null);
-  const handlePrivilegeChange = (event) => {
-    setSelectedPrivilege(event.target.value);
-  };
 
   const register = async (event) => {
     event.preventDefault();
@@ -24,7 +20,6 @@ const LandingPage = ({ setLogin }) => {
     const email = document.querySelector("#r_email").value;
     const password = document.querySelector("#r_password").value;
     const phone_number = document.querySelector("#r_phoneNumber").value;
-    const privilege = selectedPrivilege;
 
     try {
       if (!user_id || !name || !email || !password || !privilege) {
@@ -33,7 +28,7 @@ const LandingPage = ({ setLogin }) => {
       }
 
       const res = await fetch(
-        `http://localhost:3300/registration/${user_id}/${name}/${email}/${password}/${phone_number}/${privilege}`,
+        `http://localhost:3300/registration/${user_id}/${name}/${email}/${password}/${phone_number}`,
         {
           method: "POST",
           headers: {
@@ -82,12 +77,13 @@ const LandingPage = ({ setLogin }) => {
       const data = await res.json();
       
       console.log(data.userdata);
+
       if (data.status === 200 && data.userdata.status == "Active") {
         setLogin(data.userdata);
         alert(`Logged in as ${data.userdata.privilege}`);
         navigateTo(`/${data.userdata.privilege}-portal`);
       }
-      else if (data.userdata.status == "Suspended") {
+      else if (data.status === 200 && data.userdata.status == "Suspended") {
         alert(`Your account is suspended, please contact an admin immediately.`);
       } else {
         alert("Please rectify your credentials and try logging in again.");
@@ -204,18 +200,6 @@ const LandingPage = ({ setLogin }) => {
                 placeholder="92XXXXXXXXXX"
                 autoFocus
               />
-            </Form.Group>
-            <Form.Group className="mb-3">
-              <Form.Label>As</Form.Label>
-              <Form.Control
-                as="select"
-                onChange={handlePrivilegeChange}
-                value={selectedPrivilege}
-              >
-                <option value="">Select Privilege</option>
-                <option value="Contributor">Contributor</option>
-                <option value="Publisher">Publisher</option>
-              </Form.Control>
             </Form.Group>
           </Form>
         </Modal.Body>
