@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: 127.0.0.1
--- Generation Time: Dec 05, 2023 at 01:19 PM
+-- Generation Time: Dec 06, 2023 at 04:00 PM
 -- Server version: 10.4.28-MariaDB
 -- PHP Version: 8.2.4
 
@@ -20,25 +20,6 @@ SET time_zone = "+00:00";
 --
 -- Database: `codetribute`
 --
-
-DELIMITER $$
---
--- Procedures
---
-CREATE DEFINER=`root`@`localhost` PROCEDURE `UpdateUser` (IN `user_id` VARCHAR(255), IN `name` VARCHAR(255), IN `email` VARCHAR(255), IN `password` VARCHAR(255), IN `phone_number` VARCHAR(255))   BEGIN
-  SET @sql_text = CONCAT('UPDATE users SET name = ?, email = ?, password = ?, phone_number = ? WHERE user_id = ?');
-
-  PREPARE stmt FROM @sql_text;
-
-  EXECUTE stmt USING name, email, password, phone_number, user_id;
-
-  DEALLOCATE PREPARE stmt;
-  
-  INSERT INTO transaction_log (actor_id, operation_type, table_name, query)
-  VALUES (user_id, 'UPDATE', 'users', @sql_text);
-END$$
-
-DELIMITER ;
 
 -- --------------------------------------------------------
 
@@ -60,20 +41,60 @@ CREATE TABLE `commitbase` (
 --
 
 INSERT INTO `commitbase` (`commit_id`, `contributor_id`, `commit_path`, `project_id`, `commit_status`, `timestamp`) VALUES
-('Comit5996', 'C01', 'https://sepolia.etherscan.io/token/0xe2ca36365e40e81a8185bb8986d662501df5f6f2', 'Project4', 'Accepted', '2023-11-18 13:26:29'),
 ('Comit59961', 'C01', 'https://sepolia.etherscan.io/tokeen/0xe2ca36365e40e81a8185bb8986d662501df5f6f2', 'Project4', 'Accepted', '2023-11-18 13:30:34'),
 ('Commit1', 'C01', 'https://fefgergre.com', 'Project5', 'Accepted', '2023-10-27 08:44:13'),
 ('Commit3', 'C08', 'https://drive.google.com/file/d/1GjegepX80KVdvLCLkTfMxRBfiG6xP4On/view', 'Project5', 'Accepted', '2023-10-27 04:49:39'),
-('Commit45', 'C01', 'http://localhost:5173/contributor/view-all-listed-projects', 'Project3', 'Accepted', '2023-11-03 14:50:02'),
-('COmmitdf4', 'C01', 'ww.google.com', 'Project3', 'Accepted', '2023-11-03 14:51:12'),
-('CommitTest', 'C01', 'https://www.forbes.com/sites/ninabambysheva/2023/02/09/ethereum-gears-up-for-next-big-upgrade-29-billion-of-ether-to-be-unlocked/', 'Project1', 'Pending', '2023-11-26 13:47:27'),
-('Comtie345', 'C01', 'efwegwerg', 'Project2', 'Accepted', '2023-11-20 04:14:31'),
-('Comtie3454', 'C01', 'efwegwerg32r23', 'Project2', 'Accepted', '2023-11-20 04:17:46'),
-('efwf', 'C01', 'wefwe', 'Project2', 'Accepted', '2023-11-03 15:01:25'),
-('fwgegbrg', 'C01', 'jwdfewfge', 'Project2', 'Rejected', '2023-11-18 18:38:07'),
-('Hand', 'C10', 'wvveww', 'Project1', 'Pending', '2023-10-28 18:38:04'),
-('wefwe', 'C01', 'ewfef', 'Project5', 'Accepted', '2023-11-03 15:03:29'),
-('wfwef', 'C01', 'efwef', 'Project3', 'Accepted', '2023-11-03 15:03:08');
+('Commit3566', 'C02', 'bherhetrhrbrb', 'Project79', 'Pending', '2023-12-06 07:47:21'),
+('wefwe', 'C01', 'ewfef', 'Project5', 'Accepted', '2023-11-03 15:03:29');
+
+--
+-- Triggers `commitbase`
+--
+DELIMITER $$
+CREATE TRIGGER `commitbaseTriggerDelete` AFTER DELETE ON `commitbase` FOR EACH ROW BEGIN
+  DECLARE sql_text LONGTEXT;
+
+  SELECT CONCAT('DELETE FROM commitbase WHERE commit_id = ', OLD.commit_id, ';')
+  INTO sql_text
+  FROM information_schema.processlist
+  WHERE id = CONNECTION_ID();
+
+  INSERT INTO transaction_log (actor_id, operation_type, table_name, query)
+  VALUES (OLD.contributor_id, 'DELETE', 'commitbase', sql_text);
+END
+$$
+DELIMITER ;
+DELIMITER $$
+CREATE TRIGGER `commitbaseTriggerInsert` AFTER INSERT ON `commitbase` FOR EACH ROW BEGIN
+  -- Declare a variable to store the SQL statement
+  DECLARE sql_text LONGTEXT;
+
+  -- Get the full SQL statement from information_schema
+  SELECT CONCAT('INSERT INTO commitbase (commit_id, contributor_id, commit_path, project_id) VALUES (', NEW.commit_id, ', ', NEW.contributor_id, ', ', NEW.commit_path, ', ', NEW.project_id, ');')
+  INTO sql_text
+  FROM information_schema.processlist
+  WHERE id = CONNECTION_ID();
+
+  -- Insert data from the NEW row into transaction_log
+  INSERT INTO transaction_log (actor_id, operation_type, table_name, query)
+  VALUES (NEW.contributor_id, 'INSERT', 'commitbase', sql_text);
+END
+$$
+DELIMITER ;
+DELIMITER $$
+CREATE TRIGGER `commitbaseTriggerUpdate` AFTER UPDATE ON `commitbase` FOR EACH ROW BEGIN
+  DECLARE sql_text LONGTEXT;
+
+  SELECT CONCAT('UPDATE commitbase SET commit_id = ', NEW.commit_id, ', contributor_id = ', NEW.contributor_id, ', commit_path = ', NEW.commit_path, ', project_id = ', NEW.project_id, ', commit_status = ', NEW.commit_status, ', timestamp = ', NEW.timestamp, ' WHERE commit_id = ', OLD.commit_id, ';')
+  INTO sql_text
+  FROM information_schema.processlist
+  WHERE id = CONNECTION_ID();
+
+  INSERT INTO transaction_log (actor_id, operation_type, table_name, query)
+  VALUES (NEW.contributor_id, 'UPDATE', 'commitbase', sql_text);
+END
+$$
+DELIMITER ;
 
 -- --------------------------------------------------------
 
@@ -118,6 +139,34 @@ CREATE TRIGGER `paymentTrigger` AFTER INSERT ON `payments` FOR EACH ROW BEGIN
 END
 $$
 DELIMITER ;
+DELIMITER $$
+CREATE TRIGGER `paymentTriggerDelete` AFTER DELETE ON `payments` FOR EACH ROW BEGIN
+  DECLARE sql_text LONGTEXT;
+
+  SELECT CONCAT('DELETE FROM payments WHERE transaction_id = ', OLD.transaction_id, ';')
+  INTO sql_text
+  FROM information_schema.processlist
+  WHERE id = CONNECTION_ID();
+
+  INSERT INTO transaction_log (actor_id, operation_type, table_name, query)
+  VALUES (OLD.sender_user_id, 'DELETE', 'payments', sql_text);
+END
+$$
+DELIMITER ;
+DELIMITER $$
+CREATE TRIGGER `paymentTriggerUpdate` AFTER UPDATE ON `payments` FOR EACH ROW BEGIN
+  DECLARE sql_text LONGTEXT;
+
+  SELECT CONCAT('UPDATE payments SET sender_user_id = ', NEW.sender_user_id, ', receiver_user_id = ', NEW.receiver_user_id, ', amount = ', NEW.amount, ', timestamp = ', NEW.timestamp, ' WHERE transaction_id = ', OLD.transaction_id, ';')
+  INTO sql_text
+  FROM information_schema.processlist
+  WHERE id = CONNECTION_ID();
+
+  INSERT INTO transaction_log (actor_id, operation_type, table_name, query)
+  VALUES (NEW.sender_user_id, 'UPDATE', 'payments', sql_text);
+END
+$$
+DELIMITER ;
 
 -- --------------------------------------------------------
 
@@ -140,12 +189,58 @@ CREATE TABLE `projectbase` (
 --
 
 INSERT INTO `projectbase` (`project_id`, `project_name`, `project_description`, `publisher_id`, `code_path`, `tokens_offered`, `tokens_required`) VALUES
-('Project1', 'App Development Toolkit', 'C++', 'P02', 'https://github.com/ahmed-develops/MERN/tree/main/server', 300, 200),
-('Project2', 'Hello World', 'A basic python script to print Hello World when windows logged in', 'P25', 'https://miro.com/app/board/uXjVMkmXgYQ=/', 300, 200),
-('Project3', 'Hospital Management System', 'HMS for Liaqat National Hospital', 'P25', 'http://localhost/phpmyadmin/index.php?route=/table/change&db=codetribute&table=projectbase', 300, 200),
 ('Project4', 'Stack Underflow', 'Asewvrevin', 'P25', 'https://chat.openai.com/c/286135cf-55d4-45c3-9ae4-029ee44dd9ef', 300, 200),
 ('Project5', 'CodSoft', 'Internship projects', 'P25', 'https://github.com/ahmed-develops/CODSOFT', 300, 200),
-('Project8', 'Game Development', 'A game developed', 'P25', 'https://flexstudent.nu.edu.pk/Login', 300, 200);
+('Project79', 'Blind can see', 'A device made to assist blind people with hearing and seeing.', 'P05', 'http://localhost/phpmyadmin/index.php?route=/sql&pos=0&db=codetribute&table=projectbase', 0, 0);
+
+--
+-- Triggers `projectbase`
+--
+DELIMITER $$
+CREATE TRIGGER `projectbaseTriggerDelete` AFTER DELETE ON `projectbase` FOR EACH ROW BEGIN
+  DECLARE sql_text LONGTEXT;
+
+  SELECT CONCAT('DELETE FROM projectbase WHERE project_id = ', OLD.project_id, ';')
+  INTO sql_text
+  FROM information_schema.processlist
+  WHERE id = CONNECTION_ID();
+
+  INSERT INTO transaction_log (actor_id, operation_type, table_name, query)
+  VALUES (OLD.publisher_id, 'DELETE', 'projectbase', sql_text);
+END
+$$
+DELIMITER ;
+DELIMITER $$
+CREATE TRIGGER `projectbaseTriggerInsert` AFTER INSERT ON `projectbase` FOR EACH ROW BEGIN
+  -- Declare a variable to store the SQL statement
+  DECLARE sql_text LONGTEXT;
+
+  -- Get the full SQL statement from information_schema
+  SELECT CONCAT('INSERT INTO project (project_id, project_name, project_description, publisher_id, code_path, tokens_offered, tokens_required) VALUES (', NEW.project_id, ', ', NEW.project_name, ', ', NEW.project_description, ', ', NEW.publisher_id, ', ', NEW.code_path, ', ', NEW.tokens_offered, ', ', NEW.tokens_required, ');')
+  INTO sql_text
+  FROM information_schema.processlist
+  WHERE id = CONNECTION_ID();
+
+  -- Insert data from the NEW row into transaction_log
+  INSERT INTO transaction_log (actor_id, operation_type, table_name, query)
+  VALUES (NEW.publisher_id, 'INSERT', 'projectbase', sql_text);
+END
+$$
+DELIMITER ;
+DELIMITER $$
+CREATE TRIGGER `projectbaseTriggerUpdate` AFTER UPDATE ON `projectbase` FOR EACH ROW BEGIN
+  DECLARE sql_text LONGTEXT;
+
+  SELECT CONCAT('UPDATE projectbase SET project_name = ', NEW.project_name, ', project_description = ', NEW.project_description, ', publisher_id = ', NEW.publisher_id, ', code_path = ', NEW.code_path, ', tokens_offered = ', NEW.tokens_offered, ', tokens_required = ', NEW.tokens_required, ' WHERE project_id = ', OLD.project_id, ';')
+  INTO sql_text
+  FROM information_schema.processlist
+  WHERE id = CONNECTION_ID();
+
+  INSERT INTO transaction_log (actor_id, operation_type, table_name, query)
+  VALUES (NEW.publisher_id, 'UPDATE', 'projectbase', sql_text);
+END
+$$
+DELIMITER ;
 
 -- --------------------------------------------------------
 
@@ -170,7 +265,28 @@ INSERT INTO `transaction_log` (`log_id`, `timestamp`, `actor_id`, `operation_typ
 (27, '2023-12-05 10:48:12', 'C01', 'INSERT', 'payments', 'INSERT INTO payments (sender_user_id, receiver_user_id, amount) VALUES (C01, P25, 2000);'),
 (28, '2023-12-05 10:50:16', 'P25', 'INSERT', 'payments', 'INSERT INTO payments (sender_user_id, receiver_user_id, amount) VALUES (P25, C01, 12000);'),
 (29, '2023-12-05 11:29:32', 'P81', 'INSERT', 'users', 'INSERT INTO users (user_id, name, email, password, phone_number, privilege) VALUES (P81, Jahangir, jahangir@jahangir.com, imbatman12340, 03362175634, Publisher);'),
-(30, '2023-12-05 11:46:28', 'A01', 'INSERT', 'payments', 'INSERT INTO payments (sender_user_id, receiver_user_id, amount) VALUES (A01, P25, 499);');
+(30, '2023-12-05 11:46:28', 'A01', 'INSERT', 'payments', 'INSERT INTO payments (sender_user_id, receiver_user_id, amount) VALUES (A01, P25, 499);'),
+(31, '2023-12-05 16:43:05', 'A01', 'INSERT', 'payments', 'INSERT INTO payments (sender_user_id, receiver_user_id, amount) VALUES (A01, C01, 99);'),
+(32, '2023-12-05 16:44:44', 'P77', 'INSERT', 'users', 'INSERT INTO users (user_id, name, email, password, phone_number, privilege) VALUES (P77, Philipp Lahm, philipp@lahm.com, 123456789, 92435435435, Publisher);'),
+(33, '2023-12-06 07:32:16', 'P01', 'INSERT', 'walletbase', 'INSERT INTO walletbase (user_id, wallet_address) VALUES (P01, 0x6DCFbB4a4BF7E2f41981f540694267D074e71730);'),
+(34, '2023-12-06 07:42:50', 'P05', 'INSERT', 'projectbase', 'INSERT INTO project (project_id, project_name, project_description, publisher_id, code_path, tokens_offered, tokens_required) VALUES (Project79, Blind can see, A device made to assist blind people with hearing and seeing., P05, http://localhost/phpmyadmin/index.php?route=/sql&pos=0&db=codetribute&table=projectbase, 0, 0);'),
+(35, '2023-12-06 07:47:21', 'C02', 'INSERT', 'commitbase', 'INSERT INTO commitbase (commit_id, contributor_id, commit_path, project_id) VALUES (Commit3566, C02, bherhetrhrbrb, Project79);'),
+(36, '2023-12-06 09:18:04', 'C07', 'INSERT', 'commitbase', 'INSERT INTO commitbase (commit_id, contributor_id, commit_path, project_id) VALUES (Commit675, C07, rwegerge, Project8);'),
+(37, '2023-12-06 09:19:24', 'C01', 'UPDATE', 'commitbase', 'UPDATE commitbase SET commit_id = Comit5996, contributor_id = C01, commit_path = https://sepolia.etherscan.io/token/0xe2ca36365e40e81a8185bb8986d662501df5f6f22432432, project_id = Project4, commit_status = Accepted, timestamp = 2023-11-18 18:26:29 WHERE commit_id = Comit5996;'),
+(38, '2023-12-06 09:21:31', 'C01', 'DELETE', 'commitbase', 'DELETE FROM commitbase WHERE commit_id = Comit5996;'),
+(39, '2023-12-06 10:57:53', 'A01', 'UPDATE', 'payments', 'UPDATE payments SET sender_user_id = A01, receiver_user_id = C01, amount = 91, timestamp = 2023-12-05 21:43:05 WHERE transaction_id = 1b91584e3a02badbfbf5d74fc987a3efa446ec50;'),
+(40, '2023-12-06 10:59:39', 'A01', 'DELETE', 'payments', 'DELETE FROM payments WHERE transaction_id = 1b91584e3a02badbfbf5d74fc987a3efa446ec50;'),
+(41, '2023-12-06 11:00:50', 'P02', 'UPDATE', 'projectbase', 'UPDATE projectbase SET project_name = App Development Toolkitfwef, project_description = C++, publisher_id = P02, code_path = https://github.com/ahmed-develops/MERN/tree/main/server, tokens_offered = 300, tokens_required = 200 WHERE project_id = Project1;'),
+(42, '2023-12-06 11:01:32', 'P02', 'DELETE', 'projectbase', 'DELETE FROM projectbase WHERE project_id = Project1;'),
+(43, '2023-12-06 11:02:58', 'A01', 'UPDATE', 'users', 'UPDATE users SET name = Muhammad Ahmed, email = k213161@nu.edu.pk, password = manutd:*1, phone_number = 923052976751, privilege = admin, status = Active WHERE user_id = A01;'),
+(48, '2023-12-06 11:45:59', 'P25', 'DELETE', 'projectbase', 'DELETE FROM projectbase WHERE project_id = Project8;'),
+(49, '2023-12-06 13:26:26', 'P25', 'UPDATE', 'projectbase', 'UPDATE projectbase SET project_name = ergerg, project_description = ergterytery, publisher_id = P25, code_path = grerghterhgeg, tokens_offered = 300, tokens_required = 200 WHERE project_id = Project3;'),
+(50, '2023-12-06 13:27:14', 'P25', 'UPDATE', 'projectbase', 'UPDATE projectbase SET project_name = wefwefwef, project_description = rgtergtr, publisher_id = P25, code_path = bbrttrbtr, tokens_offered = 300, tokens_required = 200 WHERE project_id = Project3;'),
+(51, '2023-12-06 13:49:37', 'P25', 'UPDATE', 'projectbase', 'UPDATE projectbase SET project_name = 1111111111111, project_description = 111111111111111, publisher_id = P25, code_path = htttps:wsefwefwef, tokens_offered = 300, tokens_required = 200 WHERE project_id = Project3;'),
+(52, '2023-12-06 14:33:43', 'P25', 'DELETE', 'projectbase', 'DELETE FROM projectbase WHERE project_id = Project2;'),
+(53, '2023-12-06 14:33:54', 'P25', 'DELETE', 'projectbase', 'DELETE FROM projectbase WHERE project_id = Project3;'),
+(54, '2023-12-06 14:35:05', 'C01', 'UPDATE', 'users', 'UPDATE users SET name = Muhammad Shaheer, email = k213323@nu.edu.pk, password = naiver, phone_number = 923410286680, privilege = contributor, status = Suspended WHERE user_id = C01;'),
+(55, '2023-12-06 14:35:12', 'P25', 'UPDATE', 'users', 'UPDATE users SET name = Rohan Shergil, email = k234041@nu.edu.pk, password = khalid1, phone_number = 927765843117, privilege = Publisher, status = Suspended WHERE user_id = P25;');
 
 -- --------------------------------------------------------
 
@@ -193,8 +309,8 @@ CREATE TABLE `users` (
 --
 
 INSERT INTO `users` (`user_id`, `name`, `email`, `password`, `phone_number`, `privilege`, `status`) VALUES
-('A01', 'Muhammad Ahmed', 'k213161@nu.edu.pk', 'manutd:*', '923052976751', 'admin', 'Active'),
-('C01', 'Muhammad ShaheER', 'k213323@nu.edu.pk', 'naiver', '923410286680', 'contributor', 'Active'),
+('A01', 'Muhammad Ahmed', 'k213161@nu.edu.pk', 'manutd:*1', '923052976751', 'admin', 'Active'),
+('C01', 'Muhammad Shaheer', 'k213323@nu.edu.pk', 'naiver', '923410286680', 'contributor', 'Suspended'),
 ('C02', 'Zain Ali', 'k214870@nu.edu.pk', 'mostnaive', '923219216325', 'contributor', 'Suspended'),
 ('C07', 'Cristiano Ronadaldo', 'k236969@nu.edu.pk', 'siuuuuuuuuu', '927765843169', 'Contributor', 'Suspended'),
 ('C08', 'Babar Ashraf', 'k213202@nu.edu.pk', 'manutd:*', '923410286689', 'Contributor', 'Suspended'),
@@ -215,12 +331,13 @@ INSERT INTO `users` (`user_id`, `name`, `email`, `password`, `phone_number`, `pr
 ('P09', 'Saud Shakeel', 'k217445@nu.edu.pk', 'khalid', '927765843109', 'Publisher', 'Active'),
 ('P19', 'Khan Ali', 'k237145@nu.edu.pk', 'khalid', '927765843101', 'Publisher', 'Active'),
 ('P20', 'Jamshed Akbar', 'k214145@nu.edu.pk', 'khalid', '927765843108', 'Publisher', 'Active'),
-('P25', 'Rohan Shergil', 'k234041@nu.edu.pk', 'khalid1', '927765843117', 'Publisher', 'Active'),
+('P25', 'Rohan Shergil', 'k234041@nu.edu.pk', 'khalid1', '927765843117', 'Publisher', 'Suspended'),
 ('P26', 'Harun Hamid', 'haroon@hamid.com', 'imadwasim', '03045235763', 'Publisher', 'Suspended'),
 ('P34', 'ahmed shakeel', 'ahmed@shakeel.com', 'manutd', '13245325234', 'Publisher', 'Active'),
 ('P44', 'Kemra', 'kemra@gmail.com', 'sfwefwe', '332523524542', 'Publisher', 'Active'),
 ('P56', 'Haroon Khan', 'haroon@khan.com', 'wqwefewf', '2143242432', 'Publisher', 'Active'),
 ('P76', 'Kamran Ghulam', 'kamran@ghulam.com', 'fwefwef', '13241341', 'Publisher', 'Active'),
+('P77', 'Philipp Lahm', 'philipp@lahm.com', '123456789', '92435435435', 'Publisher', 'Active'),
 ('P81', 'Jahangir', 'jahangir@jahangir.com', 'imbatman12340', '03362175634', 'Publisher', 'Active'),
 ('P86', 'Ali', 'ali@ali.com', 'fewfwe', '342352', 'Publisher', 'Active'),
 ('P87', 'Yahya', 'yahya@yahya.com', 'nucesfast', '923456753451', 'Publisher', 'Active'),
@@ -230,6 +347,20 @@ INSERT INTO `users` (`user_id`, `name`, `email`, `password`, `phone_number`, `pr
 --
 -- Triggers `users`
 --
+DELIMITER $$
+CREATE TRIGGER `usersTriggerDelete` AFTER DELETE ON `users` FOR EACH ROW BEGIN
+  DECLARE sql_text LONGTEXT;
+
+  SELECT CONCAT('DELETE FROM users WHERE user_id = ', OLD.user_id, ';')
+  INTO sql_text
+  FROM information_schema.processlist
+  WHERE id = CONNECTION_ID();
+
+  INSERT INTO transaction_log (actor_id, operation_type, table_name, query)
+  VALUES (OLD.user_id, 'DELETE', 'users', sql_text);
+END
+$$
+DELIMITER ;
 DELIMITER $$
 CREATE TRIGGER `usersTriggerInsert` AFTER INSERT ON `users` FOR EACH ROW BEGIN
   DECLARE sql_text LONGTEXT;
@@ -246,7 +377,15 @@ $$
 DELIMITER ;
 DELIMITER $$
 CREATE TRIGGER `usersTriggerUpdate` AFTER UPDATE ON `users` FOR EACH ROW BEGIN
-  CALL UpdateUser(NEW.user_id, NEW.name, NEW.email, NEW.password, NEW.phone_number);
+  DECLARE sql_text LONGTEXT;
+
+  SELECT CONCAT('UPDATE users SET name = ', NEW.name, ', email = ', NEW.email, ', password = ', NEW.password, ', phone_number = ', NEW.phone_number, ', privilege = ', NEW.privilege, ', status = ', NEW.status, ' WHERE user_id = ', OLD.user_id, ';')
+  INTO sql_text
+  FROM information_schema.processlist
+  WHERE id = CONNECTION_ID();
+
+  INSERT INTO transaction_log (actor_id, operation_type, table_name, query)
+  VALUES (NEW.user_id, 'UPDATE', 'users', sql_text);
 END
 $$
 DELIMITER ;
@@ -269,7 +408,29 @@ CREATE TABLE `walletbase` (
 INSERT INTO `walletbase` (`user_id`, `wallet_address`) VALUES
 ('A01', '0xD3CECBC2de13f1eE2f381f5cF0C7864A8108f937'),
 ('C01', '0xe165c933Fb9d5aAB5c113c2B99C594FcDC4E2A42'),
+('P01', '0x6DCFbB4a4BF7E2f41981f540694267D074e71730'),
 ('P25', '0x118De23b4A3d1bD029b454C9c4a2B10Ee00218C7');
+
+--
+-- Triggers `walletbase`
+--
+DELIMITER $$
+CREATE TRIGGER `walletbaseTriggerInsert` AFTER INSERT ON `walletbase` FOR EACH ROW BEGIN
+  -- Declare a variable to store the SQL statement
+  DECLARE sql_text LONGTEXT;
+
+  -- Get the full SQL statement from information_schema
+  SELECT CONCAT('INSERT INTO walletbase (user_id, wallet_address) VALUES (', NEW.user_id, ', ', NEW.wallet_address, ');')
+  INTO sql_text
+  FROM information_schema.processlist
+  WHERE id = CONNECTION_ID();
+
+  -- Insert data from the NEW row into transaction_log
+  INSERT INTO transaction_log (actor_id, operation_type, table_name, query)
+  VALUES (NEW.user_id, 'INSERT', 'walletbase', sql_text);
+END
+$$
+DELIMITER ;
 
 --
 -- Indexes for dumped tables
@@ -330,7 +491,7 @@ ALTER TABLE `walletbase`
 -- AUTO_INCREMENT for table `transaction_log`
 --
 ALTER TABLE `transaction_log`
-  MODIFY `log_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=31;
+  MODIFY `log_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=56;
 
 --
 -- Constraints for dumped tables
@@ -360,7 +521,7 @@ ALTER TABLE `projectbase`
 -- Constraints for table `transaction_log`
 --
 ALTER TABLE `transaction_log`
-  ADD CONSTRAINT `transaction_log_ibfk_1` FOREIGN KEY (`actor_id`) REFERENCES `users` (`user_id`);
+  ADD CONSTRAINT `transaction_log_ibfk_1` FOREIGN KEY (`actor_id`) REFERENCES `users` (`user_id`) ON DELETE CASCADE ON UPDATE CASCADE;
 
 --
 -- Constraints for table `walletbase`
