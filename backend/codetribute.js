@@ -75,9 +75,9 @@ codetribute.get("/get/wallet/:user_id", async (req, res) => {
   try {
     await db.query(
       `
-      SELECT *
-      FROM walletbase
-      WHERE user_id = ?
+      SELECT wallet_address
+      FROM users
+      WHERE user_id = ? AND wallet_address IS NOT NULL
       `,
       [user_id],
       (err, result, fields) => {
@@ -156,6 +156,31 @@ codetribute.post("/banUser/:user_id", async (req, res) => {
       }
     );
   } catch (err) {
+    console.error(err);
+    res.status(500).json({ status: 500, errorMsg: "Internal Server Error" });
+  }
+});
+
+codetribute.post("/update/wallet/:user_id/:wallet_address", async (req, res) => {
+  const {user_id, wallet_address} = req.params;
+
+  try {
+    await db.query(`
+      UPDATE users
+      SET wallet_address = ?
+      WHERE user_id = ?
+    `, [wallet_address, user_id], 
+    (err, result, fields) => {
+      if (err) {
+        res.status(400).json({ status: 400, errorMsg: err.sqlMessage });
+      } else {
+        res
+          .status(200)
+          .json({ status: 200, msg: "Wallet address linked" });
+      }
+    });
+  }
+  catch(err) {
     console.error(err);
     res.status(500).json({ status: 500, errorMsg: "Internal Server Error" });
   }
@@ -262,47 +287,6 @@ codetribute.get("/view/activity/logs/:user_id", async (req, res) => {
     console.error(error);
   }
 });
-
-// Registration API (req.body)
-// codetribute.post("/registration/", async (req, res) => {
-//   const { actor_id } = req.params;
-//   const { user_id, name, email, password, phone_number } = req.body;
-
-//   let privilege;
-
-//   if (user_id[0] == "C") {
-//     privilege = "Contributor";
-//   } else if (user_id[0] == "P") {
-//     privilege = "Publisher";
-//   }
-
-//   try {
-//     await db.beginTransaction();
-//     await db.query(
-//       `
-//             INSERT INTO users (user_id, name, email, password, phone_number, privilege)
-//             VALUES (?,?,?,?,?,?)
-//           `,
-//       [user_id, name, email, password, phone_number, privilege],
-
-//       async (err, result, fields) => {
-//         if (err) {
-//           await db.rollback();
-//           res.status(400).json({ status: 400, errorMsg: err.sqlMessage });
-//         } else {
-//           res
-//             .status(200)
-//             .json({ status: 200, msg: "User registered successfully." });
-//         }
-//       }
-//     );
-//     await db.commit();
-//   } catch (err) {
-//     console.error(err);
-//     res.status(500).json({ status: 500, errorMsg: "Internal Server Error" });
-//     await db.rollback();
-//   }
-// });
 
 codetribute.post(
   "/update/project/:project_id/:name/:description/:code_path",

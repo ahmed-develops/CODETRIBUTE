@@ -12,6 +12,7 @@ const ManageCommits = ({ loginCredentials }) => {
   const [rejectionReason, setRejectionReason] = useState("");
 
   const handleRejectSubmit = async (project) => {
+    console.log(project);
     const commitId = rejectCommitId;
     const projectId = project.project_id;
 

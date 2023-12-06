@@ -5,6 +5,8 @@ import Modal from "react-bootstrap/Modal";
 import Table from "react-bootstrap/Table";
 import "../../assets/ViewProjects.css";
 import { NavLink } from "react-router-dom";
+import Web3 from "web3";
+import TokenABI from "../admin/CodetributeToken.json";
 
 const ViewAllListedProjects = ({ loginCredentials }) => {
   const [show, setShow] = useState(false);
@@ -14,6 +16,10 @@ const ViewAllListedProjects = ({ loginCredentials }) => {
     commit_path: "",
     project_id: "",
   });
+  const [publisherData, setPublisherData] = useState({
+    publisher_id : "",
+    tokens_required : 0
+  })
 
   const handleClose = () => setShow(false);
   const handleShow = () => setShow(true);
@@ -29,31 +35,90 @@ const ViewAllListedProjects = ({ loginCredentials }) => {
   const commitToProject = async (event) => {
     event.preventDefault();
 
-    try {
-      const res = await fetch(`http://localhost:3300/post/commit/contributor`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          commit_id: formData.commit_id,
-          project_id: formData.project_id,
-          contributor_id: formData.contributor_id,
-          commit_path: formData.commit_path,
-        }),
-      });
+    const getWalletFromDatabase = await fetch(
+        `http://localhost:3300/get/wallet/${loginCredentials.user_id}`,
+        {
+          method: "GET",
+          headers: {
+            "Content-Type": "application/json",
+          },
+        }
+      );
 
-      const data = await res.json();
+      const wallet = await getWalletFromDatabase.json();
 
-      if (data.status === 400) {
-        alert(`${data.errorMsg}`);
+      console.log(wallet);
+      if (wallet.status === 200) {
+        try {
+          if (window.ethereum) {
+            await window.ethereum.send('eth_requestAccounts');
+            window.web3 = new Web3(window.ethereum);
+          } else {
+            alert('MetaMask not detected! Please install MetaMask to use this feature.');
+            return;
+          }
+          
+          const tokenAddress = "0xe2ca36365E40e81A8185bB8986d662501dF5F6f2";
+          const tokenAbi = TokenABI;
+          const codeTokensContract = new web3.eth.Contract(tokenAbi, tokenAddress);
+  
+          const userAddress = wallet.accountAddress;
+          const tokenBalance = await codeTokensContract.methods
+            .balanceOf(userAddress)
+            .call();
+          
+            if(tokenBalance >= publisherData.tokens_required) {
+              const getPublisherWalletFromDatabase = await fetch(
+                `http://localhost:3300/get/wallet/${publisherData.publisher_id}`,
+                {
+                  method: "GET",
+                  headers: {
+                    "Content-Type": "application/json",
+                  },
+                }
+              );
+        
+              const publisherWallet = await getPublisherWalletFromDatabase.json();
+              if (wallet.status === 200) {
+                await codeTokensContract.methods.transfer(publisherWallet.accountAddress, publisherData.tokens_required).send({ from: userAddress });
+                alert(`Token transfer successful!`);
+                
+                try {
+                  const res = await fetch(`http://localhost:3300/post/commit/contributor`, {
+                    method: "POST",
+                    headers: {
+                      "Content-Type": "application/json",
+                    },
+                    body: JSON.stringify({
+                      commit_id: formData.commit_id,
+                      project_id: formData.project_id,
+                      contributor_id: formData.contributor_id,
+                      commit_path: formData.commit_path,
+                    }),
+                  });
+            
+                  const data = await res.json();
+            
+                  if (data.status === 400) {
+                    alert(`${data.errorMsg}`);
+                  }
+                  else {
+                    alert('Commit done!')
+                  }
+                } catch (err) {
+                  console.error(err);
+                }
+              }
+            }
+        }
+        catch(err) {
+          console.error(err);
+          alert(`${err.message}`);
+        }
       }
       else {
-        alert('Commit done!')
+        alert('Please link a wallet to start contributing!');
       }
-    } catch (err) {
-      console.error(err);
-    }
   };
 
   const [codeData, setCodeData] = useState([]);
@@ -173,9 +238,10 @@ const ViewAllListedProjects = ({ loginCredentials }) => {
                 <td>{val.tokens_required}</td>
                 <td>
                   <Button
-                    onClick={() => {
-                      handleShow();
-                      setFormData({
+                    onClick={ () => {
+                        setPublisherData({publisher_id: val.publisher_id, tokens_required: val.tokens_required});
+                        handleShow()
+                        setFormData({
                         ...formData,
                         project_id: val.project_id,
                         commit_id: "",

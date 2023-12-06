@@ -3,6 +3,7 @@ import Web3 from "web3";
 import PropTypes from "prop-types";
 import TokenABI from "./TokenABI.json";
 import { NavLink } from "react-router-dom";
+import Button from "react-bootstrap/esm/Button";
 
 const Wallet = ({ loginCredentials }) => {
   const [walletAddress, setWalletAddress] = useState(null);
@@ -196,7 +197,45 @@ const Wallet = ({ loginCredentials }) => {
           {renderOutgoingTransactionTable()}
         </>
       ) : (
-        <h1>User does not have a wallet</h1>
+        <>
+        <h1>You do not have a wallet</h1>
+        <Button onClick={
+          async () => {
+            try {
+              if (window.ethereum) {
+                const accounts = await window.ethereum.request({
+                  method: 'eth_requestAccounts',
+                });
+        
+                const userWalletAddress = accounts[0];
+                
+                alert(`Web3 wallet linked. User address: ${userWalletAddress}`);
+                
+                setWalletAddress(userWalletAddress);
+
+                const addWallet = await fetch(`http://localhost:3300/update/wallet/${loginCredentials.user_id}/${userWalletAddress}`,{
+                 method: 'POST',
+                 headers: {
+                  'Content-Type' : 'application/json'
+                 } 
+                });
+
+                const resAddWallet = await addWallet.json();
+
+                if (resAddWallet.status === 200) {
+                  setWalletAddress(userWalletAddress);
+                }
+                
+                window.location.reload();
+              } else {
+                console.error('Web3 not found. Please install MetaMask or another Web3 wallet.');
+              }
+            } catch (error) {
+              console.error('Error linking Web3 wallet:', error);
+            }
+          }
+        }>Click here to link your web3 wallet to your account</Button>
+        </>
       )}
     </>
   );
