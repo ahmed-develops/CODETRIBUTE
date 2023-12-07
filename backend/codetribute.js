@@ -460,18 +460,17 @@ codetribute.post(
 );
 
 codetribute.post("/publish", async (req, res) => {
-  const { project_id, projectName, projectDescription, projectLink, user_id } =
+  const { projectId, projectName, projectDescription, userId, projectLink, tokenOffered, tokenRequired } =
     req.body;
 
   try {
     await db.query(
-      `INSERT INTO projectbase (project_id, project_name, project_description, publisher_id, code_path)
-      VALUES (?,?,?,?,?)`,
-      [project_id, projectName, projectDescription, user_id, projectLink],
+      `INSERT INTO projectbase (project_id, project_name, project_description, publisher_id, code_path, tokens_offered, tokens_required)
+      VALUES (?,?,?,?,?,?,?)`,
+      [projectId, projectName, projectDescription, userId, projectLink, tokenOffered, tokenRequired],
 
       (err, result, fields) => {
         if (err) {
-          console.error(err);
           res.status(400).json({ status: 400, errorMsg: err.sqlMessage });
         } else {
           res
