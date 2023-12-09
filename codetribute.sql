@@ -3,8 +3,8 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: 127.0.0.1
--- Generation Time: Dec 07, 2023 at 03:42 AM
--- Server version: 10.4.28-MariaDB
+-- Generation Time: Dec 09, 2023 at 06:28 PM
+-- Server version: 10.4.28-MariaDB-log
 -- PHP Version: 8.2.4
 
 SET SQL_MODE = "NO_AUTO_VALUE_ON_ZERO";
@@ -41,14 +41,8 @@ CREATE TABLE `commitbase` (
 --
 
 INSERT INTO `commitbase` (`commit_id`, `contributor_id`, `commit_path`, `project_id`, `commit_status`, `timestamp`) VALUES
-('3424', 'C01', 'ewfgewgw', 'Project4', 'Pending', '2023-12-06 19:58:29'),
-('3522352g', 'C01', 'wergsdfgdfg', 'Project4', 'Pending', '2023-12-06 23:36:43'),
-('53254', 'C01', 'sgsefeafaaef', 'Project4', 'Pending', '2023-12-06 19:56:50'),
-('Comit59961', 'A03', 'https://sepolia.etherscan.io/tokeen/0xe2ca36365e40e81a8185bb8986d662501df5f6f2', 'Project4', 'Accepted', '2023-11-18 13:30:34'),
-('Commit1', 'A03', 'https://fefgergre.com', 'Project5', 'Accepted', '2023-10-27 08:44:13'),
-('Commit3', 'C08', 'https://drive.google.com/file/d/1GjegepX80KVdvLCLkTfMxRBfiG6xP4On/view', 'Project5', 'Accepted', '2023-10-27 04:49:39'),
-('Commit3566', 'C01', 'bherhetrhrbrb', 'Project79', 'Pending', '2023-12-06 07:47:21'),
-('wefwe', 'A03', 'ewfef', 'Project5', 'Accepted', '2023-11-03 15:03:29');
+('CommitTest', 'C01', 'https://sepolia.etherscan.io/tokeen/0xe2ca36365e40e81a8185bb8986d662501df5f6f2', 'ProjectX', 'Rejected', '2023-12-07 08:39:13'),
+('efwefew', 'C01', 'wdfewf', 'ProjectX', 'Accepted', '2023-12-07 08:56:09');
 
 --
 -- Triggers `commitbase`
@@ -118,6 +112,7 @@ CREATE TABLE `payments` (
 --
 
 INSERT INTO `payments` (`transaction_id`, `sender_user_id`, `receiver_user_id`, `amount`, `timestamp`) VALUES
+('0fb4f29949b8c00f25a1a34bc5f7c593273bc7f7', 'A01', 'C01', 100, '2023-12-07 11:42:03'),
 ('4d6e0b140bc3e81e1cd95f51c4989f3a4a742eb4', 'A01', 'P25', 499, '2023-12-05 16:46:28'),
 ('56e055f2a2103a625ab444f80b942e33ef61462f', 'P25', 'A03', 12000, '2023-12-05 15:50:16'),
 ('79d1ed9a6b7de40267b47703b7930ec1d0e1f6d6', 'A01', 'P25', 100, '2023-12-07 00:53:30'),
@@ -193,12 +188,8 @@ CREATE TABLE `projectbase` (
 --
 
 INSERT INTO `projectbase` (`project_id`, `project_name`, `project_description`, `publisher_id`, `code_path`, `tokens_offered`, `tokens_required`) VALUES
-('ewqfwefwe', 'eefwefef', 'wefwe', 'P25', 'wqeqwr', 200, 100),
-('Project4', 'Stack Underflow', 'Asewvrevin', 'P25', 'https://chat.openai.com/c/286135cf-55d4-45c3-9ae4-029ee44dd9ef', 300, 200),
-('Project5', 'CodSoft', 'Internship projects', 'P25', 'https://github.com/ahmed-develops/CODSOFT', 300, 200),
-('Project79', 'Blind can see', 'A device made to assist blind people with hearing and seeing.', 'P05', 'http://localhost/phpmyadmin/index.php?route=/sql&pos=0&db=codetribute&table=projectbase', 0, 0),
-('wefwefwef', 'gerggdf', 'vxcvxcvxcv', 'P25', 'wertewf', 200, 100),
-('yahooapp', 'fdwefwfw', 'fwewef', 'P25', 'wefwefwe', 200, 100);
+('Project5', 'Hello', 'Yahoo', 'P25', 'http://localhost:3300', 10, 1000),
+('ProjectX', 'Roblox', 'Roblox', 'P25', 'ewfwwfwef', 100, 50);
 
 --
 -- Triggers `projectbase`
@@ -333,7 +324,62 @@ INSERT INTO `transaction_log` (`log_id`, `timestamp`, `actor_id`, `operation_typ
 (103, '2023-12-07 00:21:27', 'P25', 'INSERT', 'projectbase', 'INSERT INTO project (project_id, project_name, project_description, publisher_id, code_path, tokens_offered, tokens_required) VALUES (ewqfwefwe, eefwefef, wefwe, P25, wqeqwr, 200, 100);'),
 (104, '2023-12-07 00:23:11', 'P25', 'UPDATE', 'users', 'UPDATE users SET name = Rohan Shergil, email = k234041@nu.edu.pk, password = khalid1, phone_number = 927765843117, privilege = Publisher, status = Active WHERE user_id = P25;'),
 (105, '2023-12-07 00:27:27', 'P25', 'UPDATE', 'users', 'UPDATE users SET name = Rohan Shergil, email = k234041@nu.edu.pk, password = khalid1, phone_number = 927765843117, privilege = Publisher, status = Active WHERE user_id = P25;'),
-(106, '2023-12-07 00:40:57', 'P25', 'INSERT', 'projectbase', 'INSERT INTO project (project_id, project_name, project_description, publisher_id, code_path, tokens_offered, tokens_required) VALUES (wefwefwef, gerggdf, vxcvxcvxcv, P25, wertewf, 200, 100);');
+(106, '2023-12-07 00:40:57', 'P25', 'INSERT', 'projectbase', 'INSERT INTO project (project_id, project_name, project_description, publisher_id, code_path, tokens_offered, tokens_required) VALUES (wefwefwef, gerggdf, vxcvxcvxcv, P25, wertewf, 200, 100);'),
+(107, '2023-12-07 04:36:49', 'P25', 'DELETE', 'projectbase', 'DELETE FROM projectbase WHERE project_id = ewqfwefwe;'),
+(108, '2023-12-07 04:54:15', 'P25', 'DELETE', 'projectbase', 'DELETE FROM projectbase WHERE project_id = Project4;'),
+(109, '2023-12-07 04:59:31', 'P25', 'DELETE', 'projectbase', 'DELETE FROM projectbase WHERE project_id = wefwefwef;'),
+(110, '2023-12-07 05:00:33', 'P25', 'DELETE', 'projectbase', 'DELETE FROM projectbase WHERE project_id = yahooapp;'),
+(111, '2023-12-07 05:03:15', 'P25', 'DELETE', 'projectbase', 'DELETE FROM projectbase WHERE project_id = Project5;'),
+(112, '2023-12-07 05:03:39', 'P25', 'UPDATE', 'projectbase', 'UPDATE projectbase SET project_name = Blind can see, project_description = A device made to assist blind people with hearing and seeing., publisher_id = P25, code_path = http://localhost/phpmyadmin/index.php?route=/sql&pos=0&db=codetribute&table=projectbase, tokens_offered = 0, tokens_required = 0 WHERE project_id = Project79;'),
+(113, '2023-12-07 05:05:16', 'P25', 'DELETE', 'projectbase', 'DELETE FROM projectbase WHERE project_id = Project79;'),
+(114, '2023-12-07 05:18:40', 'P25', 'INSERT', 'projectbase', 'INSERT INTO project (project_id, project_name, project_description, publisher_id, code_path, tokens_offered, tokens_required) VALUES (Game, Roblox, fwefewfewf`, P25, efwefewfew, 100, 40);'),
+(115, '2023-12-07 05:18:48', 'P25', 'DELETE', 'projectbase', 'DELETE FROM projectbase WHERE project_id = Game;'),
+(116, '2023-12-07 05:33:45', 'P25', 'INSERT', 'projectbase', 'INSERT INTO project (project_id, project_name, project_description, publisher_id, code_path, tokens_offered, tokens_required) VALUES (FWF, WGWGRWE, GERGERG, P25, WWERFWE, 100, 50);'),
+(117, '2023-12-07 05:33:50', 'P25', 'DELETE', 'projectbase', 'DELETE FROM projectbase WHERE project_id = FWF;'),
+(118, '2023-12-07 05:53:16', 'P45', 'INSERT', 'users', 'INSERT INTO users (user_id, name, email, password, phone_number, privilege) VALUES (P45, Ali, ali@gmail.com, ali123, 923052976452, Publisher);'),
+(119, '2023-12-07 05:59:21', 'P25', 'INSERT', 'projectbase', 'INSERT INTO project (project_id, project_name, project_description, publisher_id, code_path, tokens_offered, tokens_required) VALUES (PROJECT1, project11, fwfqwfwe, P25, FEQWFWEFWE, 100, 200);'),
+(120, '2023-12-07 06:00:10', 'P25', 'UPDATE', 'projectbase', 'UPDATE projectbase SET project_name = pROJECT2, project_description = Another game, publisher_id = P25, code_path = effee, tokens_offered = 100, tokens_required = 200 WHERE project_id = PROJECT1;'),
+(121, '2023-12-07 06:00:22', 'P25', 'DELETE', 'projectbase', 'DELETE FROM projectbase WHERE project_id = PROJECT1;'),
+(122, '2023-12-07 06:30:34', 'C01', 'UPDATE', 'users', 'UPDATE users SET name = Zain Ali2, email = k214870@nu.edu.pk2, password = mostnaive2, phone_number = 923219216325, privilege = Contributor, status = Active WHERE user_id = C01;'),
+(123, '2023-12-07 06:30:43', 'C10', 'UPDATE', 'users', 'UPDATE users SET name = Fahad Ahmed, email = k214926@nu.edu.pk, password = niggafahad, phone_number = 923009216325, privilege = Contributor, status = Suspended WHERE user_id = C10;'),
+(124, '2023-12-07 06:31:22', 'C08', 'UPDATE', 'users', 'UPDATE users SET name = Babar Ashraf, email = k213202@nu.edu.pk, password = manutd:*, phone_number = 923410286689, privilege = Contributor, status = Active WHERE user_id = C08;'),
+(125, '2023-12-07 06:37:10', 'P25', 'INSERT', 'projectbase', 'INSERT INTO project (project_id, project_name, project_description, publisher_id, code_path, tokens_offered, tokens_required) VALUES (Project56, Minesweeper, A game, P25, game, 200, 100);'),
+(126, '2023-12-07 06:37:33', 'P25', 'DELETE', 'projectbase', 'DELETE FROM projectbase WHERE project_id = Project56;'),
+(127, '2023-12-07 06:37:53', 'P25', 'INSERT', 'projectbase', 'INSERT INTO project (project_id, project_name, project_description, publisher_id, code_path, tokens_offered, tokens_required) VALUES (Project1, Game, game, P25, game2, 1000, 100);'),
+(128, '2023-12-07 06:39:32', 'C08', 'UPDATE', 'users', 'UPDATE users SET name = Babar Ashraf, email = k213202@nu.edu.pk, password = manutd:*, phone_number = 923410286689, privilege = Contributor, status = Active WHERE user_id = C08;'),
+(129, '2023-12-07 06:40:12', 'C08', 'INSERT', 'commitbase', 'INSERT INTO commitbase (commit_id, contributor_id, commit_path, project_id) VALUES (fwefw, C08, jwdfewfge, Project1);'),
+(130, '2023-12-07 06:40:49', 'C01', 'UPDATE', 'users', 'UPDATE users SET name = Zain Ali2, email = k214870@nu.edu.pk2, password = mostnaive2, phone_number = 923219216325, privilege = Contributor, status = Suspended WHERE user_id = C01;'),
+(131, '2023-12-07 06:41:13', 'C01', 'UPDATE', 'users', 'UPDATE users SET name = Zain Ali2, email = k214870@nu.edu.pk2, password = mostnaive2, phone_number = 923219216325, privilege = Contributor, status = Active WHERE user_id = C01;'),
+(132, '2023-12-07 06:41:30', 'C08', 'UPDATE', 'users', 'UPDATE users SET name = Babar Ashraf sABZWARI, email = k213202@nu.edu.pk, password = manutd:*, phone_number = 923410286689, privilege = Contributor, status = Active WHERE user_id = C08;'),
+(133, '2023-12-07 06:42:03', 'A01', 'INSERT', 'payments', 'INSERT INTO payments (sender_user_id, receiver_user_id, amount) VALUES (A01, C01, 100);'),
+(134, '2023-12-07 06:42:43', 'C98', 'INSERT', 'users', 'INSERT INTO users (user_id, name, email, password, phone_number, privilege) VALUES (C98, kAMRAN, kamran@kamran.com, dwffwef, 923543543534, Contributor);'),
+(135, '2023-12-07 07:58:36', 'C01', 'UPDATE', 'users', 'UPDATE users SET name = Zain Ali2, email = k214870@nu.edu.pk2, password = mostnaive2, phone_number = 923219216325, privilege = Contributor, status = Active WHERE user_id = C01;'),
+(136, '2023-12-07 07:59:08', 'C01', 'INSERT', 'commitbase', 'INSERT INTO commitbase (commit_id, contributor_id, commit_path, project_id) VALUES (ecewc, C01, vwevewv, Project1);'),
+(137, '2023-12-07 08:09:16', 'C01', 'UPDATE', 'commitbase', 'UPDATE commitbase SET commit_id = ecewc, contributor_id = C01, commit_path = vwevewv, project_id = Project1, commit_status = Accepted, timestamp = 2023-12-07 12:59:08 WHERE commit_id = ecewc;'),
+(138, '2023-12-07 08:09:19', 'C08', 'UPDATE', 'commitbase', 'UPDATE commitbase SET commit_id = fwefw, contributor_id = C08, commit_path = jwdfewfge, project_id = Project1, commit_status = Accepted, timestamp = 2023-12-07 11:40:12 WHERE commit_id = fwefw;'),
+(139, '2023-12-07 08:10:21', 'P25', 'INSERT', 'projectbase', 'INSERT INTO project (project_id, project_name, project_description, publisher_id, code_path, tokens_offered, tokens_required) VALUES (Project2, fwefwef, greqg, P25, efwefwef, 100, 200);'),
+(140, '2023-12-07 08:10:28', 'P25', 'DELETE', 'projectbase', 'DELETE FROM projectbase WHERE project_id = Project2;'),
+(141, '2023-12-07 08:15:05', 'P25', 'DELETE', 'projectbase', 'DELETE FROM projectbase WHERE project_id = Project1;'),
+(142, '2023-12-07 08:18:38', 'P25', 'INSERT', 'projectbase', 'INSERT INTO project (project_id, project_name, project_description, publisher_id, code_path, tokens_offered, tokens_required) VALUES (Project5, Hello, Yahoo, P25, http://localhost:3300, 10, 1000);'),
+(143, '2023-12-07 08:28:21', 'P25', 'INSERT', 'projectbase', 'INSERT INTO project (project_id, project_name, project_description, publisher_id, code_path, tokens_offered, tokens_required) VALUES (Project3, Mineswepper, Mineswepper, P25, http://minesweeper.com, 100, 100);'),
+(144, '2023-12-07 08:35:09', 'C01', 'INSERT', 'commitbase', 'INSERT INTO commitbase (commit_id, contributor_id, commit_path, project_id) VALUES (CommitTest, C01, https://www.forbes.com/sites/ninabambysheva/2023/02/09/ethereum-gears-up-for-next-big-upgrade-29-billion-of-ether-to-be-unlocked/, Project3);'),
+(145, '2023-12-07 08:35:25', 'C01', 'UPDATE', 'commitbase', 'UPDATE commitbase SET commit_id = CommitTest, contributor_id = C01, commit_path = https://www.forbes.com/sites/ninabambysheva/2023/02/09/ethereum-gears-up-for-next-big-upgrade-29-billion-of-ether-to-be-unlocked/, project_id = Project3, commit_status = Accepted, timestamp = 2023-12-07 13:35:09 WHERE commit_id = CommitTest;'),
+(146, '2023-12-07 08:36:01', 'P25', 'DELETE', 'projectbase', 'DELETE FROM projectbase WHERE project_id = Project3;'),
+(147, '2023-12-07 08:38:46', 'P25', 'INSERT', 'projectbase', 'INSERT INTO project (project_id, project_name, project_description, publisher_id, code_path, tokens_offered, tokens_required) VALUES (ProjectX, Roblox, Roblox, P25, ewfwwfwef, 100, 50);'),
+(148, '2023-12-07 08:39:13', 'C01', 'INSERT', 'commitbase', 'INSERT INTO commitbase (commit_id, contributor_id, commit_path, project_id) VALUES (CommitTest, C01, https://sepolia.etherscan.io/tokeen/0xe2ca36365e40e81a8185bb8986d662501df5f6f2, ProjectX);'),
+(149, '2023-12-07 08:44:44', 'C01', 'UPDATE', 'commitbase', 'UPDATE commitbase SET commit_id = CommitTest, contributor_id = C01, commit_path = https://sepolia.etherscan.io/tokeen/0xe2ca36365e40e81a8185bb8986d662501df5f6f2, project_id = ProjectX, commit_status = Rejected, timestamp = 2023-12-07 13:39:13 WHERE commit_id = CommitTest;'),
+(150, '2023-12-07 08:56:09', 'C01', 'INSERT', 'commitbase', 'INSERT INTO commitbase (commit_id, contributor_id, commit_path, project_id) VALUES (efwefew, C01, wdfewf, ProjectX);'),
+(151, '2023-12-07 08:56:35', 'C01', 'UPDATE', 'commitbase', 'UPDATE commitbase SET commit_id = efwefew, contributor_id = C01, commit_path = wdfewf, project_id = ProjectX, commit_status = Accepted, timestamp = 2023-12-07 13:56:09 WHERE commit_id = efwefew;'),
+(152, '2023-12-07 08:57:48', 'C01', 'UPDATE', 'commitbase', 'UPDATE commitbase SET commit_id = efwefew, contributor_id = C01, commit_path = wdfewf, project_id = ProjectX, commit_status = Rejected, timestamp = 2023-12-07 13:56:09 WHERE commit_id = efwefew;'),
+(153, '2023-12-07 08:58:54', 'C01', 'UPDATE', 'commitbase', 'UPDATE commitbase SET commit_id = efwefew, contributor_id = C01, commit_path = wdfewf, project_id = ProjectX, commit_status = Pending, timestamp = 2023-12-07 13:56:09 WHERE commit_id = efwefew;'),
+(154, '2023-12-07 08:58:58', 'C01', 'UPDATE', 'commitbase', 'UPDATE commitbase SET commit_id = efwefew, contributor_id = C01, commit_path = wdfewf, project_id = ProjectX, commit_status = Accepted, timestamp = 2023-12-07 13:56:09 WHERE commit_id = efwefew;'),
+(155, '2023-12-07 08:59:26', 'C01', 'UPDATE', 'commitbase', 'UPDATE commitbase SET commit_id = efwefew, contributor_id = C01, commit_path = wdfewf, project_id = ProjectX, commit_status = Accepted, timestamp = 2023-12-07 13:56:09 WHERE commit_id = efwefew;'),
+(156, '2023-12-07 08:59:33', 'C01', 'UPDATE', 'commitbase', 'UPDATE commitbase SET commit_id = efwefew, contributor_id = C01, commit_path = wdfewf, project_id = ProjectX, commit_status = Accepted, timestamp = 2023-12-07 13:56:09 WHERE commit_id = efwefew;'),
+(157, '2023-12-07 08:59:50', 'C01', 'UPDATE', 'commitbase', 'UPDATE commitbase SET commit_id = efwefew, contributor_id = C01, commit_path = wdfewf, project_id = ProjectX, commit_status = Pending, timestamp = 2023-12-07 13:56:09 WHERE commit_id = efwefew;'),
+(158, '2023-12-07 09:00:19', 'C01', 'UPDATE', 'commitbase', 'UPDATE commitbase SET commit_id = efwefew, contributor_id = C01, commit_path = wdfewf, project_id = ProjectX, commit_status = Accepted, timestamp = 2023-12-07 13:56:09 WHERE commit_id = efwefew;'),
+(159, '2023-12-07 09:00:40', 'C01', 'UPDATE', 'commitbase', 'UPDATE commitbase SET commit_id = efwefew, contributor_id = C01, commit_path = wdfewf, project_id = ProjectX, commit_status = Pending, timestamp = 2023-12-07 13:56:09 WHERE commit_id = efwefew;'),
+(160, '2023-12-07 09:01:40', 'P25', 'UPDATE', 'users', 'UPDATE users SET name = Rohan Shergil, email = k234041@nu.edu.pk, password = khalid1, phone_number = 927765843117, privilege = Publisher, status = Active WHERE user_id = P25;'),
+(161, '2023-12-07 09:02:25', 'C01', 'UPDATE', 'commitbase', 'UPDATE commitbase SET commit_id = efwefew, contributor_id = C01, commit_path = wdfewf, project_id = ProjectX, commit_status = Accepted, timestamp = 2023-12-07 13:56:09 WHERE commit_id = efwefew;');
 
 -- --------------------------------------------------------
 
@@ -360,9 +406,9 @@ INSERT INTO `users` (`user_id`, `name`, `email`, `password`, `phone_number`, `pr
 ('A01', 'Muhammad Ahmed', 'k213161@nu.edu.pk', 'manutd:*1', '923052976751', 'Admin', 'Active', '0x242c4eA92Dc29F4af6aE499dFe11FC083053EF5e'),
 ('A02', 'Muhammad Anas', 'k214556@nu.edu.pk', 'naive', '923362171607', 'Admin', 'Active', '0x242c4eA92Dc29F4af6aE499dFe11FC083053EF5e'),
 ('A03', 'Muhammad Shaheer', 'k213323@nu.edu.pk', 'naiver', '923410286680', 'Admin', 'Active', '0x242c4eA92Dc29F4af6aE499dFe11FC083053EF5e'),
-('C01', 'Zain Ali', 'k214870@nu.edu.pk', 'mostnaive', '923219216325', 'Contributor', 'Active', '0xe165c933fb9d5aab5c113c2b99c594fcdc4e2a42'),
-('C08', 'Babar Ashraf', 'k213202@nu.edu.pk', 'manutd:*', '923410286689', 'Contributor', 'Suspended', NULL),
-('C10', 'Fahad Ahmed', 'k214926@nu.edu.pk', 'niggafahad', '923009216325', 'Contributor', 'Active', NULL),
+('C01', 'Zain Ali2', 'k214870@nu.edu.pk2', 'mostnaive2', '923219216325', 'Contributor', 'Active', '0xeF3c34A27521f15ca5D132b91c511dEb94deaE0E'),
+('C08', 'Babar Ashraf sABZWARI', 'k213202@nu.edu.pk', 'manutd:*', '923410286689', 'Contributor', 'Active', '0x118de23b4a3d1bd029b454c9c4a2b10ee00218c7'),
+('C10', 'Fahad Ahmed', 'k214926@nu.edu.pk', 'niggafahad', '923009216325', 'Contributor', 'Suspended', NULL),
 ('C11', 'Owais Ali', 'k213298@nu.edu.pk', 'anime', '921234567890', 'Contributor', 'Active', NULL),
 ('C12', 'Ammad Hasan', 'k213218@nu.edu.pk', 'batman', '921234567899', 'Contributor', 'Active', NULL),
 ('C13', 'Mohammad Ali', 'k213228@nu.edu.pk', '123456', '921234567897', 'Contributor', 'Active', NULL),
@@ -373,16 +419,18 @@ INSERT INTO `users` (`user_id`, `name`, `email`, `password`, `phone_number`, `pr
 ('C78', 'Rajesh', 'rajesh@rajesh.com', 'password', '21434234234', 'Contributor', 'Active', NULL),
 ('C83', 'ergerg', 'sdfgedfgdf', 'vdfdfbdfg', '924453453453', 'Contributor', 'Active', NULL),
 ('C85', 'Hannah', 'hannah@hannah.com', 'imgood', '34425245', 'Contributor', 'Active', NULL),
+('C98', 'kAMRAN', 'kamran@kamran.com', 'dwffwef', '923543543534', 'Contributor', 'Active', NULL),
 ('P02', 'Taqi Baqir', 'k213175@nu.edu.pk', 'leastnaive', '923229216325', 'Publisher', 'Active', NULL),
 ('P05', 'Zafar Khan', 'k204566@nu.edu.pk', 'localhoster', '923331112223', 'Publisher', 'Active', NULL),
 ('P06', 'Rehan Ahmed', 'k234495@nu.edu.pk', 'qwerty01', '924445687436', 'Publisher', 'Active', NULL),
 ('P09', 'Saud Shakeel', 'k217445@nu.edu.pk', 'khalid', '927765843109', 'Publisher', 'Active', NULL),
 ('P19', 'Khan Ali', 'k237145@nu.edu.pk', 'khalid', '927765843101', 'Publisher', 'Active', NULL),
 ('P20', 'Jamshed Akbar', 'k214145@nu.edu.pk', 'khalid', '927765843108', 'Publisher', 'Active', NULL),
-('P25', 'Rohan Shergil', 'k234041@nu.edu.pk', 'khalid1', '927765843117', 'Publisher', 'Active', '0xe165c933fb9d5aab5c113c2b99c594fcdc4e2a42'),
+('P25', 'Rohan Shergil', 'k234041@nu.edu.pk', 'khalid1', '927765843117', 'Publisher', 'Active', '0x94AcD4325f2688805f27C0E086284EC9EF518477'),
 ('P26', 'Harun Hamid', 'haroon@hamid.com', 'imadwasim', '03045235763', 'Publisher', 'Suspended', NULL),
 ('P34', 'ahmed shakeel', 'ahmed@shakeel.com', 'manutd', '13245325234', 'Publisher', 'Active', NULL),
 ('P44', 'Kemra', 'kemra@gmail.com', 'sfwefwe', '332523524542', 'Publisher', 'Active', NULL),
+('P45', 'Ali', 'ali@gmail.com', 'ali123', '923052976452', 'Publisher', 'Active', NULL),
 ('P55', 'fwefwe', 'wfwefwe', 'wefwefwe', '325435343432', 'Publisher', 'Active', NULL),
 ('P56', 'Haroon Khan', 'haroon@khan.com', 'wqwefewf', '2143242432', 'Publisher', 'Active', NULL),
 ('P76', 'Kamran Ghulam', 'kamran@ghulam.com', 'fwefwef', '13241341', 'Publisher', 'Active', NULL),
@@ -502,7 +550,7 @@ ALTER TABLE `users`
 -- AUTO_INCREMENT for table `transaction_log`
 --
 ALTER TABLE `transaction_log`
-  MODIFY `log_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=107;
+  MODIFY `log_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=162;
 
 --
 -- Constraints for dumped tables

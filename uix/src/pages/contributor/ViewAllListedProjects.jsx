@@ -60,7 +60,7 @@ const ViewAllListedProjects = ({ loginCredentials }) => {
           
           const tokenAddress = "0xe2ca36365E40e81A8185bB8986d662501dF5F6f2";
           const tokenAbi = TokenABI;
-          const codeTokensContract = new web3.eth.Contract(tokenAbi, tokenAddress);
+          const codeTokensContract = new window.web3.eth.Contract(tokenAbi, tokenAddress);
   
           const userAddress = wallet.accountAddress;
           const tokenBalance = await codeTokensContract.methods
@@ -109,6 +109,9 @@ const ViewAllListedProjects = ({ loginCredentials }) => {
                   console.error(err);
                 }
               }
+            }
+            else {
+              alert('Insufficient balance')
             }
         }
         catch(err) {
@@ -228,7 +231,7 @@ const ViewAllListedProjects = ({ loginCredentials }) => {
             </tr>
           </thead>
           <tbody>
-            {codeData.map((val, i) => (
+            {codeData?.map((val, i) => (
               <tr key={i}>
                 <td>{val.project_id}</td>
                 <td>{val.project_name}</td>

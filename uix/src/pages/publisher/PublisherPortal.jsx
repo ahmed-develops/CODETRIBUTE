@@ -39,7 +39,7 @@ const PublisherPortal = ({ loginCredentials }) => {
 
   const publishProject = async (event) => {
     event.preventDefault();
-
+  
     if (
       !formData.projectId ||
       !formData.projectName ||
@@ -48,93 +48,47 @@ const PublisherPortal = ({ loginCredentials }) => {
       alert("Please fill all the fields and then submit your project.");
       return;
     }
-
-    const getWalletFromDatabase = await fetch(
-      `http://localhost:3300/get/wallet/${loginCredentials.user_id}`,
-      {
-        method: "GET",
+  
+    try {
+      const res = await fetch(`http://localhost:3300/publish`, {
+        method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
+        body: JSON.stringify({
+          projectId: formData.projectId,
+          projectName: formData.projectName,
+          projectDescription: formData.projectDescription,
+          projectLink: formData.projectLink,
+          tokenRequired: formData.tokensRequired,
+          tokenOffered: formData.tokensOffered,
+          userId: loginCredentials.user_id,
+        }),
+      });
+  
+      const data = await res.json();
+  
+      if (data.status === 200) {
+        alert("Project added to the listing successfully");
+        handleClose();
+      } else {
+        alert(data.errorMsg);
+        handleClose();
       }
-    );
-
-    const wallet = await getWalletFromDatabase.json();
-
-    console.log(wallet);
-    if (wallet.status === 200) {
-      try {
-        if (window.ethereum) {
-          await window.ethereum.send('eth_requestAccounts');
-          window.web3 = new Web3(window.ethereum);
-        } else {
-          alert('MetaMask not detected! Please install MetaMask to use this feature.');
-          return;
-        }
-        const tokenAddress = "0xe2ca36365E40e81A8185bB8986d662501dF5F6f2";
-        const tokenAbi = TokenABI;
-        const codeTokensContract = new web3.eth.Contract(tokenAbi, tokenAddress);
-
-        const userAddress = wallet.accountAddress;
-        const tokenBalance = await codeTokensContract.methods
-          .balanceOf(userAddress)
-          .call();
-        console.log(formData.tokensOffered);
-        console.log(tokenBalance);
-          if(parseInt(tokenBalance) >= parseInt(formData.tokensOffered)) {
-              await codeTokensContract.methods.transfer('0x242c4eA92Dc29F4af6aE499dFe11FC083053EF5e', formData.tokensOffered).send({ from: userAddress });
-              alert(`Tokens transferred to admin for hold!`);
-              try {
-                const res = await fetch(`http://localhost:3300/publish`, {
-                  method: "POST",
-                  headers: {
-                    "Content-Type": "application/json",
-                  },
-                  body: JSON.stringify({
-                    projectId: formData.projectId,
-                    projectName: formData.projectName,
-                    projectDescription: formData.projectDescription,
-                    projectLink: formData.projectLink,
-                    tokenRequired: formData.tokensRequired,
-                    tokenOffered: formData.tokensOffered,
-                    userId: loginCredentials.user_id
-                  }),
-                });
-          
-                const data = await res.json();
-          
-                if (data.status === 200) {
-                  alert("Project added to the listing successfully");
-                  handleClose();
-                } else {
-                  alert(data.errorMsg);
-                  handleClose();
-                }
-                setFormData({projectId: "",
-                projectName: "",
-                projectDescription: "",
-                projectLink: "",
-                tokensRequired: "",
-                tokensOffered: ""
-              });
-              } catch (err) {
-                console.error(err);
-              }
-          }
-          else {
-            alert('Your balance is less than what you are offering to the contributor.');
-          }
-      }
-      catch(err) {
-        console.error(err);
-        alert(`${err.message}`);
-      }
+      setFormData({
+        projectId: "",
+        projectName: "",
+        projectDescription: "",
+        projectLink: "",
+        tokensRequired: "",
+        tokensOffered: "",
+      });
+    } catch (err) {
+      console.error(err);
     }
-    else {
-      alert('Please link a wallet to start contributing!');
-    }
+
   };
-
+  
   return (
     <div className="Realgrid">
     <ViewMyProfile userdata={loginCredentials}/>

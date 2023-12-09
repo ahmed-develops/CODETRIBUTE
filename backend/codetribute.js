@@ -19,6 +19,8 @@ dotenv.config();
 // IMPORT DATABASE CONNECTIVITY SETTINGS
 const db = require("./database/connectivity");
 
+const deletedProjects = [];
+
 // BACKEND + DATABASE INITIALISATION
 codetribute.listen(
   3300,
@@ -355,6 +357,51 @@ codetribute.delete("/delete/project/:project_id", async (req, res) => {
   }
 });
 
+codetribute.delete("/delete/project/:project_id", async (req, res) => {
+  const { project_id } = req.params;
+
+  try {
+    await db.beginTransaction();
+
+    await db.query(
+      `
+      DELETE
+      FROM projectbase
+      WHERE project_id = ?
+    `,
+      [project_id],
+      (err, result, fields) => {
+        if (err) {
+          return db.rollback(() => {
+            res.status(400).json({ status: 400, errorMsg: err.sqlMessage });
+          });
+        } else {
+          db.commit((err) => {
+            if (err) {
+              return db.rollback(() => {
+                res.status(500).json({
+                  status: 500,
+                  errorMsg: `Commit error: ${err.message}`,
+                });
+              });
+            }
+
+            res
+              .status(200)
+              .json({ status: 200, msg: "Project removed from listing" });
+          });
+        }
+      }
+    );
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({
+      status: 500,
+      errorMsg: `Internal server error: ${error.message}`,
+    });
+  }
+});
+
 codetribute.post("/update/user/:user_id", async (req, res) => {
   const { user_id } = req.params;
   const { name, email, password, phone_number } = req.body;
@@ -387,6 +434,72 @@ codetribute.post("/update/user/:user_id", async (req, res) => {
     await db.rollback();
   }
 });
+
+codetribute.post("/undo/project/deletion", (req, res) => {
+  try {
+  db.query(`SELECT query FROM transaction_log
+  ORDER BY timestamp DESC
+  LIMIT 1 OFFSET 1 `, [], async (err, result, fields) => {
+    if (err) {
+      await db.rollback();
+      res.status(400).json({ status: 400, errorMsg: err.sqlMessage });
+    }
+    else {
+      await db.query(result[0],[],async (err, result, fields) => {
+        if (err) {
+          await db.rollback();
+          res.status(400).json({ status: 400, errorMsg: err.sqlMessage });
+        }
+        else {
+          db.commit();
+          res.status(200)
+          .json({ status: 200, msg: "Project recovered succesfully" });
+        }
+      })
+      console.log(result[0]);
+    }
+  })
+}catch (err) {
+  console.error(err);
+  res.status(500).json({
+          status: 500,
+          errorMsg: `Internal server error: ${error.message}`,
+        });
+}
+});
+
+// codetribute.post("/undo/project/deletion", async (req, res) => {
+//   try {
+//     await db.query("SELECT query FROM transaction_log ORDER BY timestamp DESC LIMIT 1 OFFSET 1",[], (err, result, fields)=> {
+//       if (!err) {
+//         res.status(400).send({status:400});
+//         db.query(result
+//           , [], async (err, result, fields) => {
+//           if (err) {
+//             await db.rollback();
+//             return res.status(400).json({ status: 400, errorMsg: err.sqlMessage });
+//           }
+    
+//           await db.commit();
+//           res.status(200).json({ status: 200, msg: "Project recovered successfully" });
+//         });
+//       }
+
+
+//     });
+    
+
+  
+//   } catch (error) {
+//     console.error(error);
+//     res.status(500).json({
+//       status: 500,
+//       errorMsg: `Internal server error: ${error.message}`,
+//     });
+//   }
+// });
+
+  
 
 // Registration API
 codetribute.post(
@@ -756,6 +869,33 @@ codetribute.post("/manage/commit/accept/:commit_id", async (req, res) => {
       `
       UPDATE commitbase
       SET commit_status = "Accepted"
+      WHERE commit_id = ?;
+    `,
+      [commit_id],
+
+      (err, result, fields) => {
+        if (err) {
+          res.status(400).json({ status: 400, errorMsg: err.sqlMessage });
+        } else {
+          res
+            .status(200)
+            .json({ status: 200, msg: "Commit status updated as 'Accepted'" });
+        }
+      }
+    );
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ status: 500, errorMsg: "Internal Server Error" });
+  }
+});
+codetribute.post("/manage/commit/reject/:commit_id", async (req, res) => {
+  const { commit_id } = req.params;
+
+  try {
+    await db.query(
+      `
+      UPDATE commitbase
+      SET commit_status = "Rejected"
       WHERE commit_id = ?;
     `,
       [commit_id],

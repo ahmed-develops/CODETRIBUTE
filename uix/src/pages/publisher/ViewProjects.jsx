@@ -37,15 +37,14 @@ const ViewProjects = ({ loginCredentials }) => {
         const data = await res.json();
         console.table(data);
         if (data.status !== 400) {
-        if (Array.isArray(data)) {
-          setCodeData(data);
+          if (Array.isArray(data)) {
+            setCodeData(data);
+          } else {
+            setCodeData([data]);
+          }
         } else {
-          setCodeData([data]);
+          return;
         }
-      }
-      else {
-        return;
-      }
 
         data.forEach(async (val) => {
           const commitCountResponse = await fetch(
@@ -90,7 +89,38 @@ const ViewProjects = ({ loginCredentials }) => {
           Go Back
         </NavLink>
       </center>
-      <hr/>
+      &nbsp;
+      {/* <center>
+        <NavLink
+          onClick={async () => {
+            try {
+              const undoApi = await fetch(
+                `http://localhost:3300/undo/project/deletion`,
+                {
+                  method: "POST",
+                  headers: {
+                    "Content-Type": "application/json",
+                  },
+                }
+              );
+
+              const undoApiRes = await undoApi.json();
+
+              if (undoApiRes.status === 200) {
+                alert('Deletion rollbacked.');
+              } else {
+                alert('Error rolling back');
+              }
+            } catch (error) {
+              console.error(error);
+            }
+          }}
+          className='btn btn-primary'
+        >
+          Undo Changes
+        </NavLink> */}
+      {/* </center> */}
+      <hr />
       <div className="projects-container">
         {codeData && codeData.length > 0 ? (
           <table>
@@ -111,9 +141,9 @@ const ViewProjects = ({ loginCredentials }) => {
                   <td>{val.project_name}</td>
                   <td className="path-cell">{val.project_description}</td>
                   <td className="path-cell">{val.code_path}</td>
-  
+
                   <td>{getCommitCountForProject(val.project_id) ?? "0"}</td>
-  
+
                   <td>
                     <Button
                       variant="info"
@@ -137,9 +167,9 @@ const ViewProjects = ({ loginCredentials }) => {
                               },
                             }
                           );
-  
+
                           const apiRes = await deleteProjectApi.json();
-  
+
                           if (apiRes.status === 200) {
                             alert("Project removed from listing.");
                             window.location.reload();
@@ -164,7 +194,7 @@ const ViewProjects = ({ loginCredentials }) => {
         ) : (
           <p>No projects published yet.</p>
         )}
-  
+
         <UpdateProjectModal
           show={showUpdateModal}
           handleClose={handleCloseUpdateModal}
@@ -173,7 +203,6 @@ const ViewProjects = ({ loginCredentials }) => {
       </div>
     </>
   );
-  
 };
 
 export default ViewProjects;
